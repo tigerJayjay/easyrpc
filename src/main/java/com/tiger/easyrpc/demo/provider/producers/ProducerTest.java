@@ -1,6 +1,6 @@
 package com.tiger.easyrpc.demo.provider.producers;
 
-import com.tiger.easyrpc.config.annotation.Exporter;
+import com.tiger.easyrpc.core.annotation.Exporter;
 import com.tiger.easyrpc.demo.interfaces.ITest;
 
 @Exporter

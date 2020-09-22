@@ -1,10 +1,8 @@
 package com.tiger.easyrpc;
 
-import com.tiger.easyrpc.config.annotation.EnableEasyrpc;
-import com.tiger.easyrpc.demo.interfaces.ITest;
+import com.tiger.easyrpc.core.annotation.EnableEasyrpc;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
 
 @EnableEasyrpc
 @SpringBootApplication

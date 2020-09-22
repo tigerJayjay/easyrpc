@@ -1,4 +1,4 @@
-package com.tiger.easyrpc.config;
+package com.tiger.easyrpc.core;
 
 import com.tiger.easyrpc.remote.netty4.NettyServer;
 import org.slf4j.Logger;
@@ -42,5 +42,6 @@ public class EasyRpcManager {
             logger.error("暴露服务发生异常！",e);
         }
     }
+
 
 }

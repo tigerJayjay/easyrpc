@@ -1,7 +1,7 @@
-package com.tiger.easyrpc.config.spring;
+package com.tiger.easyrpc.core.spring;
 
-import com.tiger.easyrpc.config.cache.server.ExportServiceManager;
-import com.tiger.easyrpc.config.util.BeanDefinitionRegistryUtils;
+import com.tiger.easyrpc.core.cache.server.ExportServiceManager;
+import com.tiger.easyrpc.core.util.BeanDefinitionRegistryUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;

@@ -20,10 +20,12 @@ import java.util.concurrent.TimeUnit;
 public class NettyClient {
     private EventLoopGroup workerGroup;
     private Bootstrap b;
-    private Channel channel;
     private  String host = "127.0.0.1";
     private int port = 16388;
     private Parameter parameter;
+    public NettyClient(String url,Parameter parameter){
+
+    }
     public  void connect() throws Exception{
         try{
             workerGroup = new NioEventLoopGroup();

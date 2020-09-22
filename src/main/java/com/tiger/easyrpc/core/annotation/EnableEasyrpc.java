@@ -1,6 +1,6 @@
-package com.tiger.easyrpc.config.annotation;
+package com.tiger.easyrpc.core.annotation;
 
-import com.tiger.easyrpc.config.spring.EasyrpcComponentRegistrar;
+import com.tiger.easyrpc.core.spring.EasyrpcComponentRegistrar;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;

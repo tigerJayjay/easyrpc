@@ -1,4 +1,4 @@
-package com.tiger.easyrpc.config.annotation;
+package com.tiger.easyrpc.core.annotation;
 
 import java.lang.annotation.*;
 

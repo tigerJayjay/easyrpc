@@ -1,7 +1,7 @@
-package com.tiger.easyrpc.config.spring;
+package com.tiger.easyrpc.core.spring;
 
-import com.tiger.easyrpc.config.ConsumerConfig;
-import com.tiger.easyrpc.config.annotation.Fetcher;
+import com.tiger.easyrpc.core.ConsumerConfig;
+import com.tiger.easyrpc.core.annotation.Fetcher;
 import com.tiger.easyrpc.rpc.api.proxy.ServiceProxy;
 import com.tiger.easyrpc.rpc.api.proxy.jdk.JdkProxy;
 import org.springframework.beans.BeansException;

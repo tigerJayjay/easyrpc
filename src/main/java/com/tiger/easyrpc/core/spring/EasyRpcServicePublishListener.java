@@ -1,7 +1,7 @@
-package com.tiger.easyrpc.config.spring;
+package com.tiger.easyrpc.core.spring;
 
 
-import com.tiger.easyrpc.config.EasyRpcManager;
+import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.remote.netty4.NettyClient;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;

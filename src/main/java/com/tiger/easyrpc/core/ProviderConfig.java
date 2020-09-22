@@ -1,4 +1,4 @@
-package com.tiger.easyrpc.config;
+package com.tiger.easyrpc.core;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;

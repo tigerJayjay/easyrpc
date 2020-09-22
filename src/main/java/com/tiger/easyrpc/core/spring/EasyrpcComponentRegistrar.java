@@ -1,6 +1,6 @@
-package com.tiger.easyrpc.config.spring;
+package com.tiger.easyrpc.core.spring;
 
-import com.tiger.easyrpc.config.util.BeanDefinitionRegistryUtils;
+import com.tiger.easyrpc.core.util.BeanDefinitionRegistryUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;

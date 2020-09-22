@@ -1,4 +1,4 @@
-package com.tiger.easyrpc.config.cache.server;
+package com.tiger.easyrpc.core.cache.server;
 
 import java.util.HashMap;
 import java.util.HashSet;

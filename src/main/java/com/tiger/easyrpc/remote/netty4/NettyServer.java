@@ -1,6 +1,6 @@
 package com.tiger.easyrpc.remote.netty4;
 
-import com.tiger.easyrpc.config.util.SpringBeanUtils;
+import com.tiger.easyrpc.core.util.SpringBeanUtils;
 import com.tiger.easyrpc.rpc.api.Parameter;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -12,13 +12,11 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.TimeUnit;
 
 public class NettyServer {
     private Logger logger = LoggerFactory.getLogger(NettyServer.class);
@@ -61,18 +59,6 @@ public class NettyServer {
         }
     }
     class NettyServerHandler extends ChannelInboundHandlerAdapter {
-
-        @Override
-        public void channelActive(ChannelHandlerContext ctx) throws Exception {
-
-        }
-
-        @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            super.channelInactive(ctx);
-
-        }
-
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg){
             try{
@@ -85,33 +71,6 @@ public class NettyServer {
                 logger.error("服务处理异常！",e);
             }finally{
                 ReferenceCountUtil.release(msg);
-            }
-        }
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            // TODO Auto-generated method stub
-            super.exceptionCaught(ctx, cause);
-
-        }
-        /**
-         * 心跳检测触发的事件通过本方法捕获
-         */
-        @Override
-        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-            if (evt instanceof IdleStateEvent) {
-                IdleState state = ((IdleStateEvent) evt).state();
-                if(state == state.READER_IDLE ){
-                    ChannelFuture fcutrue =  ctx.close();
-                    fcutrue.addListener(new ChannelFutureListener() {
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            Channel channel = future.channel();
-
-                        }
-                    });
-                }
-            }else{
-                super.userEventTriggered(ctx, evt);
             }
         }
     }

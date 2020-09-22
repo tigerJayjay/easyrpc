@@ -1,4 +1,4 @@
-package com.tiger.easyrpc.config.util;
+package com.tiger.easyrpc.core.util;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

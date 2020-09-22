@@ -1,4 +1,4 @@
-package com.tiger.easyrpc.config.annotation;
+package com.tiger.easyrpc.core.annotation;
 
 import java.lang.annotation.*;
 
@@ -7,6 +7,5 @@ import java.lang.annotation.*;
 @Documented
 @Inherited
 public @interface Fetcher {
-    String[] url();
-    String name() default "";
+    String url() default "";
 }
