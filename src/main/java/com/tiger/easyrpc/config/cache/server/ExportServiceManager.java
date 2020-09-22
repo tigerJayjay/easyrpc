@@ -1,18 +1,14 @@
 package com.tiger.easyrpc.config.cache.server;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 public class ExportServiceManager {
-    private static Map<String,Object> services = new ConcurrentHashMap<String,Object>();
+    public static Map<String,Object> services = new HashMap<String,Object>(156);
+    public static Set<Class> exporterClass = new HashSet<Class>(256);
 
     private ExportServiceManager(){};
 
-    public static void setService(String key,Object service){
-        services.put(key,service);
-    }
-
-    public static Object getService(String key){
-        return services.get(key);
-    }
 }

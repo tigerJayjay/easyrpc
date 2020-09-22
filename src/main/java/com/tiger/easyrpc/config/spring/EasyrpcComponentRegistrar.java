@@ -9,15 +9,11 @@ import org.springframework.core.type.AnnotationMetadata;
 public class EasyrpcComponentRegistrar implements ImportBeanDefinitionRegistrar {
     public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry beanDefinitionRegistry) {
        registExporterResolver(beanDefinitionRegistry);
-
        registFetcherResolver(beanDefinitionRegistry);
-
-
-
     }
 
     private void registExporterResolver(BeanDefinitionRegistry registry){
-        BeanDefinitionRegistryUtils.regist(registry,ExporterScanResolver.class);
+        BeanDefinitionRegistryUtils.regist(registry, ExporterResolver.class);
     }
 
     private void registFetcherResolver(BeanDefinitionRegistry registry){
