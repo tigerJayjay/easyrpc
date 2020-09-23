@@ -1,32 +1,42 @@
 package com.tiger.easyrpc.remote.netty4;
 
-import com.tiger.easyrpc.demo.interfaces.ITest;
 import com.tiger.easyrpc.rpc.api.Parameter;
+import com.tiger.easyrpc.rpc.api.Result;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.ReferenceCountUtil;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import static com.tiger.easyrpc.common.EasyrpcConstant.*;
 
 public class NettyClient {
     private EventLoopGroup workerGroup;
     private Bootstrap b;
-    private  String host = "127.0.0.1";
-    private int port = 16388;
+    private  String host;
+    private int port;
     private Parameter parameter;
+    private ResultFuture resultFuture;
     public NettyClient(String url,Parameter parameter){
-
+        resolverUrl(url);
+        this.parameter = parameter;
     }
-    public  void connect() throws Exception{
+
+    private void resolverUrl(String url){
+        try{
+            String[] split = url.split(COMMON_SYMBOL_MH);
+            if(split.length != 2){
+                throw new RuntimeException("url格式错误！");
+            }
+            this.host = split[0];
+            this.port = Integer.valueOf(split[1]);
+        }catch (Exception e){
+            throw new RuntimeException("url格式错误！",e);
+        }
+    }
+    public  ResultFuture connect() throws Exception{
+        resultFuture = new ResultFuture();
         try{
             workerGroup = new NioEventLoopGroup();
             b = new Bootstrap();
@@ -40,42 +50,32 @@ public class NettyClient {
                 @Override
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
                     //解码
-                    socketChannel.pipeline().addLast(new NettyProtostuffDec(1024 * 1024, 0, 4,0,4));
+                    socketChannel.pipeline().addLast(new NettyProtostuffDec(1024 * 1024, 0, 4,0,4,Result.class));
                     //编码
                     socketChannel.pipeline().addLast(new NettyProtostuffEnc());
                     socketChannel.pipeline().addLast(new TcpHalfPackageTestHandler());
                 }
             });
-            ChannelFuture future=b.connect().sync();
-            future.channel().closeFuture().sync();
+            ChannelFuture future=b.connect(host,port).sync();
+            future.channel().closeFuture();
         }finally {
             workerGroup.shutdownGracefully().sync();
         }
+        return resultFuture;
     }
 
-    class TcpHalfPackageTestHandler extends ChannelInboundHandlerAdapter {
-
-        public TcpHalfPackageTestHandler() {
-
-        }
-
+    public class TcpHalfPackageTestHandler extends ChannelInboundHandlerAdapter {
         @Override
         public void channelActive(ChannelHandlerContext ctx) {
-            Parameter p = new Parameter();
-            p.setClazz(ITest.class);
-            try {
-                p.setMethod(ITest.class.getMethod("test",new Class[]{String.class}));
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-            p.setObjs(new Object[]{"test"});
+            Parameter p = NettyClient.this.parameter;
             ctx.writeAndFlush(p);
         }
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             try {
-
+                resultFuture.setStatus(RESULT_BACK_SUC);
+                resultFuture.setResult(((Result)msg).getResult());
             } finally {
                 ReferenceCountUtil.release(msg);
             }
@@ -88,4 +88,29 @@ public class NettyClient {
         }
     }
 
+    public class ResultFuture{
+        private int status;
+        private Object result;
+
+        public int getStatus() {
+            return status;
+        }
+
+        public void setStatus(int status) {
+            this.status = status;
+        }
+
+        public Object getResult() {
+            return result;
+        }
+
+        public void setResult(Object result) {
+            this.result = result;
+        }
     }
+
+
+
+
+
+}

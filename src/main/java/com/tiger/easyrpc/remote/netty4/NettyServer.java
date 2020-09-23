@@ -2,6 +2,7 @@ package com.tiger.easyrpc.remote.netty4;
 
 import com.tiger.easyrpc.core.util.SpringBeanUtils;
 import com.tiger.easyrpc.rpc.api.Parameter;
+import com.tiger.easyrpc.rpc.api.Result;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -10,8 +11,6 @@ import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.timeout.IdleState;
-import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,7 @@ public class NettyServer {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             //解码
-                            socketChannel.pipeline().addLast(new NettyProtostuffDec(1024 * 1024, 0, 4,0,4));
+                            socketChannel.pipeline().addLast(new NettyProtostuffDec(1024 * 1024, 0, 4,0,4,Parameter.class));
                             //编码
                             socketChannel.pipeline().addLast(new NettyProtostuffEnc());
                             socketChannel.pipeline().addLast(new NettyServerHandler());
@@ -66,7 +65,9 @@ public class NettyServer {
                 Object bean = SpringBeanUtils.getBean(p.getClazz());
                 Method method = bean.getClass().getMethod(p.getMethod().getName(),p.getMethod().getParameterTypes());
                 Object invoke = method.invoke(bean,p.getObjs());
-                ctx.writeAndFlush(invoke);
+                Result result = new Result();
+                result.setResult(invoke);
+                ctx.writeAndFlush(result);
             }catch (Exception e){
                 logger.error("服务处理异常！",e);
             }finally{

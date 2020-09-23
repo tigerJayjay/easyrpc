@@ -2,7 +2,9 @@ package com.tiger.easyrpc.core.spring;
 
 
 import com.tiger.easyrpc.core.EasyRpcManager;
+import com.tiger.easyrpc.demo.interfaces.ITest;
 import com.tiger.easyrpc.remote.netty4.NettyClient;
+import com.tiger.easyrpc.rpc.api.Parameter;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -26,12 +28,6 @@ public class EasyRpcServicePublishListener implements ApplicationListener {
                     EasyRpcManager.getInstance().exportService();
                 }
             });
-            NettyClient client = new NettyClient();
-            try {
-                client.connect();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 }

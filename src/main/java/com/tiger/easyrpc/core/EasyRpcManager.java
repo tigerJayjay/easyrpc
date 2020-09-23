@@ -43,5 +43,9 @@ public class EasyRpcManager {
         }
     }
 
+    public String getClientRemoteUrl(){
+        return this.consumerConfig.getRemoteUrl();
+    }
+
 
 }

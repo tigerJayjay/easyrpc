@@ -5,6 +5,6 @@ public class RandomStrategy implements IStrategy {
         //url选取策略,暂时随机
         int length = url.length-1;
         int select = (int)(Math.random()*length+1);
-        return url[select];
+        return url[0];
     }
 }
