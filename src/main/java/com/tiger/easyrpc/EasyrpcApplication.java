@@ -12,21 +12,19 @@ public class EasyrpcApplication {
 
     public static void main(String[] args) {
         ConfigurableApplicationContext run = SpringApplication.run(EasyrpcApplication.class, args);
-        ConsumerTest bean = run.getBean(ConsumerTest.class);
-        bean.test();
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    Thread.sleep(4000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                ConsumerTest bean = run.getBean(ConsumerTest.class);
-//                for(int i = 0;i<10000;i++){
-//                    bean.test();
-//                }
-//            }
-//        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(4000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                ConsumerTest bean = run.getBean(ConsumerTest.class);
+                for(int i = 0;i<10000;i++){
+                    bean.test();
+                }
+            }
+        }).start();
     }
 }

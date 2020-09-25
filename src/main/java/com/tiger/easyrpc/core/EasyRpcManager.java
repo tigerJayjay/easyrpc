@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
  * 管理easyrpc的各个组件
  */
 public class EasyRpcManager {
+    private String serviceScanPath;
     private Logger logger = LoggerFactory.getLogger(EasyRpcManager.class);
     private static EasyRpcManager manager = new EasyRpcManager();
-
     private EasyRpcManager(){}
     private NettyServer nettyServer;
     private ProviderConfig providerConfig;
@@ -19,6 +19,14 @@ public class EasyRpcManager {
 
     public static EasyRpcManager getInstance(){
         return manager;
+    }
+
+    public String getServiceScanPath() {
+        return serviceScanPath;
+    }
+
+    public void setServiceScanPath(String serviceScanPath) {
+        this.serviceScanPath = serviceScanPath;
     }
 
     public void setProviderConfig(ProviderConfig providerConfig){

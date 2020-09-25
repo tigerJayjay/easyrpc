@@ -10,7 +10,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Enumeration;
 
 public class ExporterResolverHelper implements ApplicationContextInitializer {
@@ -21,23 +23,23 @@ public class ExporterResolverHelper implements ApplicationContextInitializer {
     private final String PATH_SEPARATOR = File.separator;
     @Override
     public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
-        resolver();
-        resolveMethods();
-
-        //开启消费者监听
+//        resolver();
+//        resolveMethods();
     }
 
     private void resolver(){
         String rootUrl = DEFAULT_PATH;
         try {
-            Enumeration<URL> urls = getClassLoader().getResources(rootUrl);
+            String filePath = System.getProperty("user.dir");
+            addClass(filePath,DEFAULT_PATH);
+            Enumeration<URL> urls = getClassLoader().getResources(filePath);
             while(urls.hasMoreElements()){
                 URL u = urls.nextElement();
                 String path = u.toURI().getPath();
                 addClass(path,DEFAULT_PATH);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            logger.error("扫描解析服务类异常！",e);
         }
     }
 
@@ -49,7 +51,7 @@ public class ExporterResolverHelper implements ApplicationContextInitializer {
         return DEFAULT_PATH.equals(packageName);
     }
 
-    private void addClass(String path, String packageName) {
+    private void addClass(String path, String packageName) throws MalformedURLException, ClassNotFoundException {
         File f = new File(path);
         File[] fs = f.listFiles();
         for (File ft : fs) {
