@@ -1,8 +1,8 @@
 package com.tiger.easyrpc.remote.netty4;
 
 import com.tiger.easyrpc.core.util.SpringBeanUtils;
-import com.tiger.easyrpc.rpc.api.Parameter;
-import com.tiger.easyrpc.rpc.api.Result;
+import com.tiger.easyrpc.rpc.Parameter;
+import com.tiger.easyrpc.rpc.Result;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -28,34 +28,26 @@ public class NettyServer {
     public void run() throws  Exception{
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
-        try{
-            ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup,workerGroup)
-                    .channel(NioServerSocketChannel.class)//调用channel()方法通过new ReflectiveChannelFactory(channelClass)实例化channel工厂
-                    .childOption(NioChannelOption.TCP_NODELAY,true)
-                    .option(NioChannelOption.SO_BACKLOG,1024)
-                    .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            //解码
-                            socketChannel.pipeline().addLast(new NettyProtostuffDec(1024 * 1024, 0, 4,0,4,Parameter.class));
-                            //编码
-                            socketChannel.pipeline().addLast(new NettyProtostuffEnc());
-                            socketChannel.pipeline().addLast(new NettyServerHandler());
-                        }
-                    })
-                    .option(ChannelOption.SO_BACKLOG,128)
-                    .childOption(ChannelOption.SO_KEEPALIVE,true);
-            //绑定端口，开始接收即将到来的连接
-            ChannelFuture f = b.bind(port).sync();//->doBind()->initAndRegister()->
-            //等待服务端socket被关闭
-            //在这个例子中，不会发生，但是你可以通过这样做去优雅的关闭你的服务端
-            f.channel().closeFuture().sync();
-        }finally {
-            workerGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
-        }
+        ServerBootstrap b = new ServerBootstrap();
+        b.group(bossGroup,workerGroup)
+                .channel(NioServerSocketChannel.class)//调用channel()方法通过new ReflectiveChannelFactory(channelClass)实例化channel工厂
+                .childOption(NioChannelOption.TCP_NODELAY,true)
+                .option(NioChannelOption.SO_BACKLOG,1024)
+                .handler(new LoggingHandler(LogLevel.INFO))
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+                    @Override
+                    protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        //解码
+                        socketChannel.pipeline().addLast(new NettyProtostuffDec(1024 * 1024, 0, 4,0,4,Parameter.class));
+                        //编码
+                        socketChannel.pipeline().addLast(new NettyProtostuffEnc());
+                        socketChannel.pipeline().addLast(new NettyServerHandler());
+                    }
+                })
+                .option(ChannelOption.SO_BACKLOG,128)
+                .childOption(ChannelOption.SO_KEEPALIVE,true);
+        //绑定端口，开始接收即将到来的连接
+        ChannelFuture f = b.bind(port);//->doBind()->initAndRegister()->
     }
     class NettyServerHandler extends ChannelInboundHandlerAdapter {
         @Override
@@ -67,6 +59,7 @@ public class NettyServer {
                 Object invoke = method.invoke(bean,p.getObjs());
                 Result result = new Result();
                 result.setResult(invoke);
+                result.setMesId(p.getMesId());
                 ctx.writeAndFlush(result);
             }catch (Exception e){
                 logger.error("服务处理异常！",e);

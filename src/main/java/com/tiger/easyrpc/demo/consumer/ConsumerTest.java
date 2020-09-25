@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ConsumerTest {
-    @Fetcher
+    @Fetcher(url = "127.0.0.1:16388")
     private ITest iTest;
 
     public void test(){

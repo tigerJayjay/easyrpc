@@ -1,7 +1,7 @@
 package com.tiger.easyrpc.core;
 
 
-import com.tiger.easyrpc.rpc.api.Parameter;
+import com.tiger.easyrpc.rpc.Parameter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 

@@ -1,14 +1,33 @@
-package com.tiger.easyrpc.rpc.api;
+package com.tiger.easyrpc.rpc;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
 public  class Parameter implements Serializable {
+    private String mesId;
     private Object[] objs;
     private Class<?> clazz;
     private Method method;
     private String version;
     private String group;
+
+    public Parameter(){}
+    public Parameter(String mesId, Object[] objs, Class<?> clazz, Method method, String version, String group) {
+        this.mesId = mesId;
+        this.objs = objs;
+        this.clazz = clazz;
+        this.method = method;
+        this.version = version;
+        this.group = group;
+    }
+
+    public String getMesId() {
+        return mesId;
+    }
+
+    public void setMesId(String mesId) {
+        this.mesId = mesId;
+    }
 
     public Method getMethod() {
         return method;
