@@ -1,1 +1,0 @@
-org.springframework.context.ApplicationContextInitializer=com.tiger.easyrpc.core.spring.ExporterResolverHelper

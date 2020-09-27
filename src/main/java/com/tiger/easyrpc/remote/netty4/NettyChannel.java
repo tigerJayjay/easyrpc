@@ -53,15 +53,12 @@ public class NettyChannel implements Channel {
                 if(hasResult){
                     return result;
                 }
-                try {
-                    getResult.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                getResult.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }finally {
                 lock.unlock();
             }
-
             return result;
         }
 

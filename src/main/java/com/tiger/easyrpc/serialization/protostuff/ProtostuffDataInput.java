@@ -15,7 +15,6 @@ public class ProtostuffDataInput extends ObjectDataInput {
     }
     @Override
     public Object readObject() {
-        System.out.println("readObject()[size:"+bytes.length+"]");
         return ProtostuffUtil.deserializer(bytes,clazz);
     }
 }
