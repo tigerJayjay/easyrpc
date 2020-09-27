@@ -2,6 +2,7 @@ package com.tiger.easyrpc.rpc;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 public  class Parameter implements Serializable {
     private String mesId;
@@ -67,5 +68,17 @@ public  class Parameter implements Serializable {
 
     public void setClazz(Class<?> clazz) {
         this.clazz = clazz;
+    }
+
+    @Override
+    public String toString() {
+        return "Parameter{" +
+                "mesId='" + mesId + '\'' +
+                ", objs=" + Arrays.toString(objs) +
+                ", clazz=" + clazz +
+                ", method=" + method +
+                ", version='" + version + '\'' +
+                ", group='" + group + '\'' +
+                '}';
     }
 }

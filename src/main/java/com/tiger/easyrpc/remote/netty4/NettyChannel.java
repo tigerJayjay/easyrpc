@@ -1,12 +1,15 @@
 package com.tiger.easyrpc.remote.netty4;
 
 import com.tiger.easyrpc.remote.api.Channel;
-import java.util.concurrent.ConcurrentHashMap;
+
+import java.util.HashMap;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class NettyChannel implements Channel {
     private String url;
-    private static ConcurrentHashMap<String,NettyClient> clientMap = new ConcurrentHashMap<>();
+    private static HashMap<String,NettyClient> clientMap = new HashMap<>();
     private ResultFuture resultFuture;
     public NettyChannel(String url){
         this.url = url;
@@ -22,39 +25,55 @@ public class NettyChannel implements Channel {
 
     @Override
     public void sendMessage(Object o) throws Exception {
-        NettyClient client = clientMap.putIfAbsent(url, new NettyClient(url));
-        if(client == null){
-            client = clientMap.get(url);
-            client.connect();
+        synchronized (clientMap){
+            NettyClient client = clientMap.get(url);
+            if(client == null){
+                client = new NettyClient(url);
+                client.connect();
+                clientMap.put(url,client);
+            }
+            client.sendMessage(o);
         }
-        client.sendMessage(o);
     }
 
     @Override
     public void receiveMessage(Object o) {
         this.resultFuture.setResult(o);
-        this.resultFuture.setAccept(true);
     }
 
 
     public class ResultFuture {
-        private volatile boolean accept;
+        private ReentrantLock lock = new ReentrantLock();
+        private Condition getResult = lock.newCondition();
         private volatile Object result;
-
-        public boolean isAccept() {
-            return accept;
-        }
-
-        public void setAccept(boolean accept) {
-            this.accept = accept;
-        }
-
+        private volatile boolean hasResult = false;
         public Object getResult() {
+            try{
+                lock.lock();
+                if(hasResult){
+                    return result;
+                }
+                try {
+                    getResult.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }finally {
+                lock.unlock();
+            }
+
             return result;
         }
 
         public void setResult(Object result) {
-            this.result = result;
+            try{
+                lock.lock();
+                this.result = result;
+                this.hasResult = true;
+                getResult.signalAll();
+            }finally {
+                lock.unlock();
+            }
         }
     }
 

@@ -9,6 +9,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.ReferenceCountUtil;
@@ -37,8 +38,9 @@ public class NettyServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        socketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024*1024,0,4,0,4));
                         //解码
-                        socketChannel.pipeline().addLast(new NettyProtostuffDec(1024 * 1024, 0, 4,0,4,Parameter.class));
+                        socketChannel.pipeline().addLast(new NettyProtostuffDec(Parameter.class));
                         //编码
                         socketChannel.pipeline().addLast(new NettyProtostuffEnc());
                         socketChannel.pipeline().addLast(new NettyServerHandler());
@@ -47,7 +49,10 @@ public class NettyServer {
                 .option(ChannelOption.SO_BACKLOG,128)
                 .childOption(ChannelOption.SO_KEEPALIVE,true);
         //绑定端口，开始接收即将到来的连接
-        ChannelFuture f = b.bind(port);//->doBind()->initAndRegister()->
+        ChannelFuture f = b.bind(port).sync();
+
+
+
     }
     class NettyServerHandler extends ChannelInboundHandlerAdapter {
         @Override

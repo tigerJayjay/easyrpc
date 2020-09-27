@@ -17,4 +17,12 @@ public class Result implements Serializable {
     public void setMesId(String mesId) {
         this.mesId = mesId;
     }
+
+    @Override
+    public String toString() {
+        return "Result{" +
+                "mesId='" + mesId + '\'' +
+                ", result=" + result +
+                '}';
+    }
 }

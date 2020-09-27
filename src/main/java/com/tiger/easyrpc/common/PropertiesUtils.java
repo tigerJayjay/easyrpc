@@ -2,9 +2,7 @@ package com.tiger.easyrpc.common;
 
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 
-@Component
 public class PropertiesUtils implements EnvironmentAware {
     private static Environment envir;
     @Override

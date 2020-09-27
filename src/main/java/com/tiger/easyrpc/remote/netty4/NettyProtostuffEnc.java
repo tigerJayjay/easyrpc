@@ -11,6 +11,7 @@ public class NettyProtostuffEnc extends MessageToByteEncoder {
     protected void encode(ChannelHandlerContext channelHandlerContext, Object o, ByteBuf byteBuf) throws Exception {
         ObjectDataOutput pdo = new ProtostuffDataOutput();
         byte[] bytes = pdo.writeObject(o);
+        byteBuf.writeInt(bytes.length);
         byteBuf.writeBytes(bytes);
     }
 }

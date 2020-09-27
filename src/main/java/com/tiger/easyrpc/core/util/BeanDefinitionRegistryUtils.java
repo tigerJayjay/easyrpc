@@ -10,8 +10,6 @@ import org.springframework.util.ObjectUtils;
 
 import java.beans.Introspector;
 
-import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
-
 public class BeanDefinitionRegistryUtils {
     private static Logger logger  = LoggerFactory.getLogger(BeanDefinitionRegistryUtils.class);
     public static void regist(BeanDefinitionRegistry registry, Class<?> clazz){

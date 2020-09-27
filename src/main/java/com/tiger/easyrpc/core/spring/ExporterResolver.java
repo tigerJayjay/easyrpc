@@ -18,7 +18,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 
-import static com.tiger.easyrpc.common.EasyrpcConstant.*;
+import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_XG;
+import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_YJH;
 
 /**
  * 找到标有ExporterScan注解的类，获取注解值，加载指定包中带有Exporter的类放入Set中

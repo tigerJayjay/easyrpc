@@ -7,6 +7,8 @@ import com.tiger.easyrpc.serialization.protostuff.util.ProtostuffUtil;
 public class ProtostuffDataOutput extends ObjectDataOutput {
 
     public byte[] writeObject(Object o) {
-        return ProtostuffUtil.serializer(o);
+        byte[] serializer = ProtostuffUtil.serializer(o);
+        System.out.println("writeObject()[size:"+serializer.length+"]");
+        return serializer;
     }
 }

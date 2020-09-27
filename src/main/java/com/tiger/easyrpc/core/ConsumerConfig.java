@@ -3,9 +3,8 @@ package com.tiger.easyrpc.core;
 
 import com.tiger.easyrpc.rpc.Parameter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
+
 @ConfigurationProperties("easyrpc.client")
 public class ConsumerConfig implements Config {
     private String remoteUrl;

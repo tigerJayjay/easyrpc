@@ -4,27 +4,26 @@ import com.tiger.easyrpc.serialization.api.ObjectDataInput;
 import com.tiger.easyrpc.serialization.protostuff.ProtostuffDataInput;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.ByteToMessageDecoder;
 
-public class NettyProtostuffDec extends LengthFieldBasedFrameDecoder {
+import java.util.List;
+
+public class NettyProtostuffDec extends ByteToMessageDecoder {
     private Class tClass;
 
-    public NettyProtostuffDec(int maxFrameLength, int lengthFieldOffset, int lengthFieldLength, int lengthAdjustment, int initialBytesToStrip,Class tClass) {
-        super(maxFrameLength, lengthFieldOffset, lengthFieldLength, lengthAdjustment, initialBytesToStrip);
+    public NettyProtostuffDec(Class tClass) {
         this.tClass = tClass;
     }
 
     @Override
-    public  Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
+    protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
         try {
-            byte[] dstBytes = new byte[in.readableBytes()];
-            //切记这里一定要用readBytes，不能用getBytes，否则会导致readIndex不能向后移动，从而导致netty did not read anything but decoded a message.错误
-            in.readBytes(dstBytes,0,in.readableBytes());
+            byte[] dstBytes = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(dstBytes,0,byteBuf.readableBytes());
             ObjectDataInput di = new ProtostuffDataInput(dstBytes, tClass);
-            return di.readObject();
+            list.add(di.readObject()) ;
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
         }
     }
 }

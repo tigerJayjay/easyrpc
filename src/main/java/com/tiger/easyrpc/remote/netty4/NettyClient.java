@@ -7,12 +7,16 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.tiger.easyrpc.common.EasyrpcConstant.*;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_MH;
 
 public class NettyClient {
+    private static LinkedBlockingQueue<Object> queue = new LinkedBlockingQueue<>();
     private Logger logger = LoggerFactory.getLogger(NettyClient.class);
     private EventLoopGroup workerGroup;
     private Bootstrap b;
@@ -47,8 +51,9 @@ public class NettyClient {
         b.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
+                socketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024*1024,0,4,0,4));
                 //解码
-                socketChannel.pipeline().addLast(new NettyProtostuffDec(1024 * 1024, 0, 4,0,4,Result.class));
+                socketChannel.pipeline().addLast(new NettyProtostuffDec(Result.class));
                 //编码
                 socketChannel.pipeline().addLast(new NettyProtostuffEnc());
                 socketChannel.pipeline().addLast(new TcpHalfPackageTestHandler());
@@ -62,14 +67,21 @@ public class NettyClient {
         this.channelFuture.channel().close();
     }
 
-    public void sendMessage(Object object){
+    public  void  sendMessage(Object object){
         this.channelFuture.channel().writeAndFlush(object);
     }
 
+
     public class TcpHalfPackageTestHandler extends ChannelInboundHandlerAdapter {
+
+        @Override
+        public void channelActive(ChannelHandlerContext ctx) throws Exception {
+            super.channelActive(ctx);
+        }
+
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-          MessageToChannelManager.messageToChannel.get(((Result)msg).getMesId()).receiveMessage(((Result)msg).getResult());
+            MessageToChannelManager.messageToChannel.get(((Result)msg).getMesId()).receiveMessage(((Result)msg).getResult());
         }
 
 

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
  */
 public class EasyRpcManager {
     private String serviceScanPath;
+    private String easyrpcRootPath="com.tiger.easyrpc";
     private Logger logger = LoggerFactory.getLogger(EasyRpcManager.class);
     private static EasyRpcManager manager = new EasyRpcManager();
     private EasyRpcManager(){}
@@ -27,6 +28,14 @@ public class EasyRpcManager {
 
     public void setServiceScanPath(String serviceScanPath) {
         this.serviceScanPath = serviceScanPath;
+    }
+
+    public String getEasyrpcRootPath() {
+        return easyrpcRootPath;
+    }
+
+    public void setEasyrpcRootPath(String easyrpcRootPath) {
+        this.easyrpcRootPath = easyrpcRootPath;
     }
 
     public void setProviderConfig(ProviderConfig providerConfig){

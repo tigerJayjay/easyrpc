@@ -12,7 +12,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Enumeration;
 
 public class ExporterResolverHelper implements ApplicationContextInitializer {

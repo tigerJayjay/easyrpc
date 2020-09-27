@@ -7,8 +7,10 @@ import com.tiger.easyrpc.remote.netty4.NettyChannel;
 import com.tiger.easyrpc.rpc.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Random;
 
 import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_DH;
 
@@ -33,15 +35,14 @@ public class EasyrpcInvocatioinHandler implements InvocationHandler {
         //获取url
         String urlStr = FetcherServiceManager.urlCache.get(method.getDeclaringClass().getTypeName());
         String url = getRandomUrl(urlStr);
+        int i = new Random().nextInt();
+        String mesId = String.valueOf(i);
         //调用远程方法并返回
-        Parameter p = new Parameter("1",args,method.getDeclaringClass(),method,"1.0","default");
+        Parameter p = new Parameter(mesId,args,method.getDeclaringClass(),method,"1.0","default");
         NettyChannel channel = new NettyChannel(url);
-        MessageToChannelManager.messageToChannel.put("1",channel);
+        MessageToChannelManager.messageToChannel.put(mesId,channel);
         channel.sendMessage(p);
         NettyChannel.ResultFuture resultFuture = channel.getResultFuture();
-        while(!resultFuture.isAccept()){
-
-        }
         return resultFuture.getResult();
     }
 

@@ -35,7 +35,7 @@ public class ProtostuffUtil {
      */
     public static synchronized <T> byte[] serializer(T obj){
         Class<T> clazz = (Class<T>)obj.getClass();
-        LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
+        LinkedBuffer buffer = LinkedBuffer.allocate(1024*1024);
         Schema<T> schema = getSchema(clazz);
         try {
             return ProtostuffIOUtil.toByteArray(obj,schema,buffer);
@@ -58,4 +58,5 @@ public class ProtostuffUtil {
             throw  new RuntimeException(e);
         }
     }
+
 }

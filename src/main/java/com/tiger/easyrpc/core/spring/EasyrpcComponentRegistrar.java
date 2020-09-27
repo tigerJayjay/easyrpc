@@ -14,6 +14,7 @@ public class EasyrpcComponentRegistrar implements ImportBeanDefinitionRegistrar 
         EasyRpcManager.getInstance().setServiceScanPath(introspectedClass.getPackage().getName());
         registExporterResolver(beanDefinitionRegistry);
         registFetcherResolver(beanDefinitionRegistry);
+        registBeanImporter(beanDefinitionRegistry);
     }
 
     private void registExporterResolver(BeanDefinitionRegistry registry){
@@ -22,5 +23,9 @@ public class EasyrpcComponentRegistrar implements ImportBeanDefinitionRegistrar 
 
     private void registFetcherResolver(BeanDefinitionRegistry registry){
         BeanDefinitionRegistryUtils.regist(registry,FetcherResolver.class);
+    }
+
+    private void registBeanImporter(BeanDefinitionRegistry registry){
+        BeanDefinitionRegistryUtils.regist(registry,EasyrpcComponentImporter.class);
     }
 }
