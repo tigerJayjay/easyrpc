@@ -18,7 +18,7 @@
 
 #### 注意事项
 
-1.@Fetcher注解必须加在Bean的属性上，才能引入远程服务对象。
+1.@Fetcher注解必须加在受Spring管理的Bean的属性上，才能引入远程服务对象。
 
 2.服务端在application.properties中使用easyrpc.server.port=xxx属性，指定服务暴露端口
 
