@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public  class Parameter implements Serializable {
-    private String mesId;
+    private Long mesId;
     private Object[] objs;
     private Class<?> clazz;
     private Method method;
@@ -13,7 +13,7 @@ public  class Parameter implements Serializable {
     private String group;
 
     public Parameter(){}
-    public Parameter(String mesId, Object[] objs, Class<?> clazz, Method method, String version, String group) {
+    public Parameter(Long mesId, Object[] objs, Class<?> clazz, Method method, String version, String group) {
         this.mesId = mesId;
         this.objs = objs;
         this.clazz = clazz;
@@ -22,11 +22,11 @@ public  class Parameter implements Serializable {
         this.group = group;
     }
 
-    public String getMesId() {
+    public Long getMesId() {
         return mesId;
     }
 
-    public void setMesId(String mesId) {
+    public void setMesId(Long mesId) {
         this.mesId = mesId;
     }
 

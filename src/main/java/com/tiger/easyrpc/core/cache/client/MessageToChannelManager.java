@@ -9,6 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * 保存消息和通道对应信息
  */
 public class MessageToChannelManager {
-    public static Map<String, Channel> messageToChannel = new ConcurrentHashMap<String,Channel>();
+    public static Map<Long, Channel> messageToChannel = new ConcurrentHashMap<Long,Channel>();
 
 }

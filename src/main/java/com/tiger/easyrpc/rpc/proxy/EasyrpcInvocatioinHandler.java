@@ -1,5 +1,6 @@
 package com.tiger.easyrpc.rpc.proxy;
 
+import com.tiger.easyrpc.common.SnowflakeUtils;
 import com.tiger.easyrpc.core.cache.client.FetcherServiceManager;
 import com.tiger.easyrpc.core.cache.client.MessageToChannelManager;
 import com.tiger.easyrpc.core.urlstrategy.RandomStrategy;
@@ -35,15 +36,16 @@ public class EasyrpcInvocatioinHandler implements InvocationHandler {
         //获取url
         String urlStr = FetcherServiceManager.urlCache.get(method.getDeclaringClass().getTypeName());
         String url = getRandomUrl(urlStr);
-        int i = new Random().nextInt();
-        String mesId = String.valueOf(i);
+        Long mesId = SnowflakeUtils.genId();
         //调用远程方法并返回
         Parameter p = new Parameter(mesId,args,method.getDeclaringClass(),method,"1.0","default");
         NettyChannel channel = new NettyChannel(url);
         MessageToChannelManager.messageToChannel.put(mesId,channel);
         channel.sendMessage(p);
         NettyChannel.ResultFuture resultFuture = channel.getResultFuture();
-        return resultFuture.getResult();
+        Object result = resultFuture.getResult();
+        MessageToChannelManager.messageToChannel.remove(mesId);
+        return result;
     }
 
 
