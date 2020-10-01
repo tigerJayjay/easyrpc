@@ -26,3 +26,14 @@
 
 4.客户端使用easyrpc.client.remoteUrl=127.0.0.1:8888,127.0.0.1:8889属性，指定全局服务引用地址，也可以通过@Fetcher注解的url属性指定，后者会覆盖前者，并且如果指定多个地址，会随机选取一个连接远程服务。
 
+#### application.properties配置  
+服务端:  
+easyrpc.server.port:指定服务暴露端口  
+客户端:  
+easyrpc.client.remoteUrl:指定远程服务地址,格式(ip1:port1,ip2:port2)  
+easyrpc.client.service.version:指定远程服务版本号  
+easyrpc.client.service.group:指定远程服务分组  
+  
+  
+
+
