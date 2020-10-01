@@ -11,4 +11,6 @@ import java.lang.annotation.*;
 @Inherited
 @Import(EasyrpcComponentRegistrar.class)
 public @interface EnableEasyrpc {
+    boolean enableClient() default false;
+    boolean enableServer() default false;
 }

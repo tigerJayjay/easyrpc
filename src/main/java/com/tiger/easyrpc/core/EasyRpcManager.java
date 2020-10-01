@@ -22,6 +22,10 @@ public class EasyRpcManager {
         return manager;
     }
 
+    public ConsumerConfig getConsumerConfig() {
+        return consumerConfig;
+    }
+
     public String getServiceScanPath() {
         return serviceScanPath;
     }
@@ -47,8 +51,9 @@ public class EasyRpcManager {
     }
 
     public void exportService(){
-        if(providerConfig == null){
-            logger.info("{}未设置！","providerConfig");
+        //未设置服务端端口，不暴露服务
+        if(providerConfig == null || providerConfig.getPort() == null){
+            return;
         }
         if(nettyServer == null){
             nettyServer = new NettyServer(this.providerConfig.getPort());
@@ -58,10 +63,6 @@ public class EasyRpcManager {
         } catch (Exception e) {
             logger.error("暴露服务发生异常！",e);
         }
-    }
-
-    public String getClientRemoteUrl(){
-        return this.consumerConfig.getRemoteUrl();
     }
 
 

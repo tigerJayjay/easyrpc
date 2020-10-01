@@ -2,10 +2,7 @@ package com.tiger.easyrpc.common;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 public class SnowflakeUtils {
 

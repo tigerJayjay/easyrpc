@@ -1,10 +1,9 @@
 package com.tiger.easyrpc.remote.netty4;
 
 import com.tiger.easyrpc.remote.api.Channel;
+import com.tiger.easyrpc.rpc.ResultFuture;
 
 import java.util.HashMap;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 public class NettyChannel implements Channel {
@@ -24,12 +23,16 @@ public class NettyChannel implements Channel {
     }
 
     @Override
-    public void sendMessage(Object o) throws Exception {
+    public void sendMessage(Object o){
         synchronized (clientMap){
             NettyClient client = clientMap.get(url);
             if(client == null){
                 client = new NettyClient(url);
-                client.connect();
+                try {
+                    client.connect();
+                } catch (Exception e) {
+                    throw new RuntimeException("远程服务连接失败！",e);
+                }
                 clientMap.put(url,client);
             }
             client.sendMessage(o);
@@ -42,36 +45,6 @@ public class NettyChannel implements Channel {
     }
 
 
-    public class ResultFuture {
-        private ReentrantLock lock = new ReentrantLock();
-        private Condition getResult = lock.newCondition();
-        private volatile Object result;
-        private volatile boolean hasResult = false;
-        public Object getResult() {
-            try{
-                lock.lock();
-                if(hasResult){
-                    return result;
-                }
-                getResult.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }finally {
-                lock.unlock();
-            }
-            return result;
-        }
 
-        public void setResult(Object result) {
-            try{
-                lock.lock();
-                this.result = result;
-                this.hasResult = true;
-                getResult.signalAll();
-            }finally {
-                lock.unlock();
-            }
-        }
-    }
 
 }

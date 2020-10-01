@@ -1,6 +1,7 @@
 package com.tiger.easyrpc.core.spring;
 
 import com.tiger.easyrpc.common.PropertiesUtils;
+import com.tiger.easyrpc.core.ConsumerConfig;
 import com.tiger.easyrpc.core.ProviderConfig;
 import com.tiger.easyrpc.core.util.BeanDefinitionRegistryUtils;
 import com.tiger.easyrpc.core.util.SpringBeanUtils;
@@ -14,11 +15,9 @@ public class EasyrpcComponentImporter implements BeanDefinitionRegistryPostProce
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry beanDefinitionRegistry) throws BeansException {
         BeanDefinitionRegistryUtils.regist(beanDefinitionRegistry, PropertiesUtils.class);
         BeanDefinitionRegistryUtils.regist(beanDefinitionRegistry, EasyRpcServicePublishListener.class);
-        BeanDefinitionRegistryUtils.regist(beanDefinitionRegistry, FetcherResolver.class);
         BeanDefinitionRegistryUtils.regist(beanDefinitionRegistry, SpringBeanUtils.class);
         BeanDefinitionRegistryUtils.regist(beanDefinitionRegistry, ProviderConfig.class);
-
-
+        BeanDefinitionRegistryUtils.regist(beanDefinitionRegistry, ConsumerConfig.class);
     }
 
     @Override

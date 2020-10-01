@@ -4,17 +4,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("easyrpc.server")
 public class ProviderConfig implements Config {
-    private int port;
+    private Integer port;
 
     public ProviderConfig(){
         EasyRpcManager.getInstance().setProviderConfig(this);
     }
 
-    public int getPort() {
+    public Integer getPort() {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(Integer port) {
         this.port = port;
     }
 
