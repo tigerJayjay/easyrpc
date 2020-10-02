@@ -82,10 +82,10 @@ public class NettyClient {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg){
             Result res = (Result)msg;
+            MessageToChannelManager.messageToChannel.get(((Result)msg).getMesId()).receiveMessage(res.getResult());
             if(res.getException() != null){
                 throw new RuntimeException(res.getException());
             }
-            MessageToChannelManager.messageToChannel.get(((Result)msg).getMesId()).receiveMessage(res.getResult());
         }
 
 

@@ -1,5 +1,7 @@
 package com.tiger.easyrpc.rpc;
 
+import com.tiger.easyrpc.remote.RpcException;
+
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -9,15 +11,18 @@ public class ResultFuture {
     private Condition getResult = lock.newCondition();
     private volatile Object result;
     private volatile boolean hasResult = false;
-    public Object getResult(long timeout) {
+    public Object getResult(long timeout) throws RpcException{
         try{
             lock.lock();
             if(hasResult){
                 return result;
             }
-            getResult.await(timeout, TimeUnit.MILLISECONDS);
+            boolean await = getResult.await(timeout, TimeUnit.MILLISECONDS);
+            if(!await){
+                throw new RpcException("远程调用超时！",null);
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }finally {
             lock.unlock();
         }
