@@ -10,7 +10,7 @@
 
 #### 使用说明  
 
-1.在SpringBoot启动类添加@EnableEasyrpc，默认扫描启动类所在包及以下的包；  
+1.在SpringBoot启动类添加@EnableEasyrpc，默认扫描启动类所在包及以下的包，可通过enableServer和enableClient来标识应用为服务端或客户端；  
 2.通过在服务类上使用@Exporter注解可直接暴露服务；  
 3.通过@Fetcher注解可直接远程引入服务到接口属性，直接调用接口属性像在本地一样使用远程服务。
 
@@ -33,6 +33,11 @@ easyrpc.client.remoteUrl:指定远程服务地址,格式(ip1:port1,ip2:port2)
 easyrpc.client.service.version:指定远程服务版本号  
 easyrpc.client.service.group:指定远程服务分组  
 easyrpc.client.rpcTimeout:远程调用超时时间,默认5000毫秒
+
+#### 待更新  
+
+1.扩展点机制
+2.支持注册中心
   
   
 
