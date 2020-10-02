@@ -1,4 +1,5 @@
 package com.tiger.easyrpc.core.spring;
+
 import com.tiger.easyrpc.core.ConsumerConfig;
 import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.annotation.Fetcher;
@@ -8,17 +9,14 @@ import com.tiger.easyrpc.core.metadata.MetadataManager;
 import com.tiger.easyrpc.rpc.proxy.jdk.JdkProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 
-public class FetcherResolver implements ApplicationListener<ContextRefreshedEvent>, ApplicationContextAware {
-    private ApplicationContext applicationContext;
+public class FetcherResolver implements ApplicationListener<ContextRefreshedEvent> {
     private Logger logger = LoggerFactory.getLogger(FetcherResolver.class);
 
     private AnnotationMetadata setMetadata(Fetcher fetcher,Object service){
@@ -56,7 +54,8 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        String[] beanNames = this.applicationContext.getBeanDefinitionNames();
+        ApplicationContext applicationContext = contextRefreshedEvent.getApplicationContext();
+        String[] beanNames = applicationContext.getBeanDefinitionNames();
         for (String beanName : beanNames) {
             Object bean = applicationContext.getBean(beanName);
             Field[] declaredFields = bean.getClass().getDeclaredFields();
@@ -72,10 +71,5 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
                 MetadataManager.getInstance().setMetadata(metadata);
             }
         }
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
     }
 }

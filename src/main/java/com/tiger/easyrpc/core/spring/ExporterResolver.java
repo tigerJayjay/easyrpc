@@ -3,6 +3,8 @@ package com.tiger.easyrpc.core.spring;
 import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.annotation.Exporter;
 import com.tiger.easyrpc.core.cache.server.ExportServiceManager;
+import com.tiger.easyrpc.core.metadata.ExporterMetadata;
+import com.tiger.easyrpc.core.metadata.MetadataManager;
 import com.tiger.easyrpc.core.util.BeanDefinitionRegistryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,21 +12,21 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 
-import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_XG;
-import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_YJH;
+import static com.tiger.easyrpc.common.EasyrpcConstant.*;
 
 /**
  * 找到标有ExporterScan注解的类，获取注解值，加载指定包中带有Exporter的类放入Set中
  */
-public class ExporterResolver implements BeanDefinitionRegistryPostProcessor {
+public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, ApplicationListener<ContextRefreshedEvent> {
     private Logger logger = LoggerFactory.getLogger(ExporterResolver.class);
     private final String FILE_NAME = "class";
     public ExporterResolver(){
@@ -36,7 +38,6 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor {
 
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry beanDefinitionRegistry) throws BeansException {
         resolver();
-        resolveMethods();
         for(Class c:ExportServiceManager.exporterClass){
             BeanDefinitionRegistryUtils.regist(beanDefinitionRegistry,c);
         }
@@ -61,7 +62,7 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor {
         return Thread.currentThread().getContextClassLoader();
     }
 
-    private void addClass(String path, String packageName) throws MalformedURLException, ClassNotFoundException {
+    private void addClass(String path, String packageName) {
         File f = new File(path);
         File[] fs = f.listFiles();
         for (File ft : fs) {
@@ -75,6 +76,7 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor {
                     Class cls = Class.forName(clazz);
                     if (cls.isAnnotationPresent(Exporter.class)) {
                         ExportServiceManager.exporterClass.add(cls);
+                        this.addService(cls);
                     }
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException("Class:" + clazz + "not found");
@@ -98,22 +100,35 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor {
     }
 
 
-    private void resolveMethods(){
-        for (Class aClass : ExportServiceManager.exporterClass) {
+    private void addService(Class aClass){
             Type[] genericInterfaces = aClass.getGenericInterfaces();
             if(genericInterfaces.length == 0){
                 logger.info("服务类{}需要实现一个服务接口",aClass.getName());
+                throw new RuntimeException("{}服务类需要实现接口！");
+            }
+            Exporter annotation = (Exporter) aClass.getAnnotation(Exporter.class);
+            String group = annotation.group();
+            String version = annotation.version();
+            Class serviceInterface = (Class)genericInterfaces[0];
+            ExportServiceManager.services.put(serviceInterface.getName()+
+                    COMMON_SYMBOL_FH+version+COMMON_SYMBOL_FH+group,aClass);
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
+        ApplicationContext applicationContext = contextRefreshedEvent.getApplicationContext();
+        String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
+        for (String beanDefinitionName : beanDefinitionNames) {
+            Object bean = applicationContext.getBean(beanDefinitionName);
+            Exporter annotation = bean.getClass().getAnnotation(Exporter.class);
+            if(annotation == null){
                 continue;
             }
-            Class serviceInterface = (Class)genericInterfaces[0];
-            Method[] methods = aClass.getDeclaredMethods();
-            for (Method method : methods) {
-                try {
-                    ExportServiceManager.services.put(serviceInterface.getName()+COMMON_SYMBOL_YJH+method.getName(),aClass.newInstance());
-                } catch (InstantiationException  | IllegalAccessException  e1 ) {
-                    throw new RuntimeException("初始化服务类出错！",e1);
-                }
-            }
+            ExporterMetadata metadata = new ExporterMetadata();
+            metadata.setSource(bean);
+            metadata.setVersion(annotation.version());
+            metadata.setGroup(annotation.group());
+            MetadataManager.getInstance().setMetadata(metadata);
         }
     }
 }

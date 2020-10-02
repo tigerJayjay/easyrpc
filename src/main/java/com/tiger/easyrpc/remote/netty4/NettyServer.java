@@ -1,5 +1,6 @@
 package com.tiger.easyrpc.remote.netty4;
 
+import com.tiger.easyrpc.core.cache.server.ExportServiceManager;
 import com.tiger.easyrpc.core.util.SpringBeanUtils;
 import com.tiger.easyrpc.rpc.Parameter;
 import com.tiger.easyrpc.rpc.Result;
@@ -17,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+
+import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_FH;
 
 public class NettyServer {
     private Logger logger = LoggerFactory.getLogger(NettyServer.class);
@@ -59,7 +62,9 @@ public class NettyServer {
         public void channelRead(ChannelHandlerContext ctx, Object msg){
             try{
                 Parameter p = (Parameter)msg;
-                Object bean = SpringBeanUtils.getBean(p.getClazz());
+                Class aClass = ExportServiceManager.services.get(p.getClazz().getName() +
+                        COMMON_SYMBOL_FH + p.getVersion() + COMMON_SYMBOL_FH + p.getGroup());
+                Object bean = SpringBeanUtils.getBean(aClass);
                 Method method = bean.getClass().getMethod(p.getMethod().getName(),p.getMethod().getParameterTypes());
                 Object invoke = method.invoke(bean,p.getObjs());
                 Result result = new Result();

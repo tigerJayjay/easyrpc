@@ -7,5 +7,6 @@ import java.lang.annotation.*;
 @Documented
 @Inherited
 public @interface Exporter {
-
+    String version() default "";
+    String group() default "";
 }
