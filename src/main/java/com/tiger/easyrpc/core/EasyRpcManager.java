@@ -46,6 +46,10 @@ public class EasyRpcManager {
         this.providerConfig = providerConfig;
     }
 
+    public ProviderConfig getProviderConfig() {
+        return providerConfig;
+    }
+
     public void setConsumerConfig(ConsumerConfig consumerConfig){
         this.consumerConfig = consumerConfig;
     }

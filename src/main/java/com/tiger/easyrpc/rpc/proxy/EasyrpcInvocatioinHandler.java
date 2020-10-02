@@ -1,6 +1,8 @@
 package com.tiger.easyrpc.rpc.proxy;
 
 import com.tiger.easyrpc.common.SnowflakeUtils;
+import com.tiger.easyrpc.core.ConsumerConfig;
+import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.cache.client.MessageToChannelManager;
 import com.tiger.easyrpc.core.metadata.AnnotationMetadata;
 import com.tiger.easyrpc.core.metadata.FetcherMetadata;
@@ -50,7 +52,8 @@ public class EasyrpcInvocatioinHandler implements InvocationHandler {
         MessageToChannelManager.messageToChannel.put(mesId,channel);
         channel.sendMessage(p);
         ResultFuture resultFuture = channel.getResultFuture();
-        Object result = resultFuture.getResult();
+        ConsumerConfig consumerConfig = EasyRpcManager.getInstance().getConsumerConfig();
+        Object result = resultFuture.getResult(consumerConfig.getRpcTimeout());
         MessageToChannelManager.messageToChannel.remove(mesId);
         return result;
     }

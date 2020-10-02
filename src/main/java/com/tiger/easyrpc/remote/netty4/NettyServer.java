@@ -2,6 +2,7 @@ package com.tiger.easyrpc.remote.netty4;
 
 import com.tiger.easyrpc.core.cache.server.ExportServiceManager;
 import com.tiger.easyrpc.core.util.SpringBeanUtils;
+import com.tiger.easyrpc.remote.RpcException;
 import com.tiger.easyrpc.rpc.Parameter;
 import com.tiger.easyrpc.rpc.Result;
 import io.netty.bootstrap.ServerBootstrap;
@@ -59,7 +60,13 @@ public class NettyServer {
     }
     class NettyServerHandler extends ChannelInboundHandlerAdapter {
         @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            super.exceptionCaught(ctx, cause);
+        }
+
+        @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg){
+            Result result = new Result();
             try{
                 Parameter p = (Parameter)msg;
                 Class aClass = ExportServiceManager.services.get(p.getClazz().getName() +
@@ -67,11 +74,12 @@ public class NettyServer {
                 Object bean = SpringBeanUtils.getBean(aClass);
                 Method method = bean.getClass().getMethod(p.getMethod().getName(),p.getMethod().getParameterTypes());
                 Object invoke = method.invoke(bean,p.getObjs());
-                Result result = new Result();
                 result.setResult(invoke);
                 result.setMesId(p.getMesId());
                 ctx.writeAndFlush(result);
             }catch (Exception e){
+                result.setException(new RpcException("远程调用异常！",e));
+                ctx.writeAndFlush(result);
                 logger.error("服务处理异常！",e);
             }finally{
                 ReferenceCountUtil.release(msg);

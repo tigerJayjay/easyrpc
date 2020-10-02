@@ -5,6 +5,8 @@ import java.io.Serializable;
 public class Result implements Serializable {
     private Long mesId;
     private Object result;
+    private Throwable exception;
+
     public Object getResult() {
         return result;
     }
@@ -16,6 +18,12 @@ public class Result implements Serializable {
     }
     public void setMesId(Long mesId) {
         this.mesId = mesId;
+    }
+    public Throwable getException() {
+        return exception;
+    }
+    public void setException(Throwable exception) {
+        this.exception = exception;
     }
 
     @Override

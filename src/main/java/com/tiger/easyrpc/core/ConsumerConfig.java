@@ -12,6 +12,16 @@ public class ConsumerConfig implements Config {
     private String interfacepath;
     private Service service;
     private Parameter parameter;
+    //远程调用超时时间 毫秒
+    private Long rpcTimeout = 5000l;
+
+    public Long getRpcTimeout() {
+        return rpcTimeout;
+    }
+
+    public void setRpcTimeout(Long rpcTimeout) {
+        this.rpcTimeout = rpcTimeout;
+    }
 
     public ConsumerConfig(){
         EasyRpcManager.getInstance().setConsumerConfig(this);

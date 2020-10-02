@@ -16,6 +16,8 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 
+import static com.tiger.easyrpc.common.EasyrpcConstant.EMPTY_STR;
+
 public class FetcherResolver implements ApplicationListener<ContextRefreshedEvent> {
     private Logger logger = LoggerFactory.getLogger(FetcherResolver.class);
 
@@ -31,11 +33,11 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
         }
         String version = fetcher.version();
         if(StringUtils.isEmpty(version)){
-            version = consumerConfig.getVersion();
+            version = consumerConfig.getVersion() == null ? EMPTY_STR : consumerConfig.getVersion();
         }
         String group = fetcher.group();
         if(StringUtils.isEmpty(group)){
-            group = consumerConfig.getGroup();
+            group = consumerConfig.getGroup() == null ? EMPTY_STR : consumerConfig.getGroup();
         }
         FetcherMetadata  metadata = new FetcherMetadata(url,version,group,service);
         return metadata;

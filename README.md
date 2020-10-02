@@ -25,10 +25,14 @@
 
 服务端:  
 easyrpc.server.port:指定服务暴露端口  
+easyrpc.server.service.version:指定远程服务版本号  
+easyrpc.server.service.group:指定远程服务分组  
+
 客户端:  
 easyrpc.client.remoteUrl:指定远程服务地址,格式(ip1:port1,ip2:port2)  
 easyrpc.client.service.version:指定远程服务版本号  
 easyrpc.client.service.group:指定远程服务分组  
+easyrpc.client.rpcTimeout:远程调用超时时间,默认5000毫秒
   
   
 

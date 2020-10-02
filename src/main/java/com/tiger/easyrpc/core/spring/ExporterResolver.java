@@ -1,10 +1,9 @@
 package com.tiger.easyrpc.core.spring;
 
 import com.tiger.easyrpc.core.EasyRpcManager;
+import com.tiger.easyrpc.core.ProviderConfig;
 import com.tiger.easyrpc.core.annotation.Exporter;
 import com.tiger.easyrpc.core.cache.server.ExportServiceManager;
-import com.tiger.easyrpc.core.metadata.ExporterMetadata;
-import com.tiger.easyrpc.core.metadata.MetadataManager;
 import com.tiger.easyrpc.core.util.BeanDefinitionRegistryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +14,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -76,7 +76,6 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, Ap
                     Class cls = Class.forName(clazz);
                     if (cls.isAnnotationPresent(Exporter.class)) {
                         ExportServiceManager.exporterClass.add(cls);
-                        this.addService(cls);
                     }
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException("Class:" + clazz + "not found");
@@ -109,6 +108,13 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, Ap
             Exporter annotation = (Exporter) aClass.getAnnotation(Exporter.class);
             String group = annotation.group();
             String version = annotation.version();
+            ProviderConfig providerConfig = EasyRpcManager.getInstance().getProviderConfig();
+            if(StringUtils.isEmpty(version)){
+                version = providerConfig.getVersion() == null ? EMPTY_STR : providerConfig.getVersion();
+            }
+            if(StringUtils.isEmpty(group)){
+                group = providerConfig.getGroup() == null ? EMPTY_STR : providerConfig.getGroup();
+            }
             Class serviceInterface = (Class)genericInterfaces[0];
             ExportServiceManager.services.put(serviceInterface.getName()+
                     COMMON_SYMBOL_FH+version+COMMON_SYMBOL_FH+group,aClass);
@@ -124,11 +130,7 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, Ap
             if(annotation == null){
                 continue;
             }
-            ExporterMetadata metadata = new ExporterMetadata();
-            metadata.setSource(bean);
-            metadata.setVersion(annotation.version());
-            metadata.setGroup(annotation.group());
-            MetadataManager.getInstance().setMetadata(metadata);
+            this.addService(bean.getClass());
         }
     }
 }

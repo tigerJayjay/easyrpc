@@ -8,4 +8,5 @@ public class EasyrpcConstant {
     public static final String COMMON_SYMBOL_MH = ":";
     public static final String COMMON_SYMBOL_XG = File.separator;
     public static final String COMMON_SYMBOL_YJH = ".";
+    public static final String EMPTY_STR = "";
 }
