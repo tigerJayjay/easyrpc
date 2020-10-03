@@ -6,7 +6,11 @@
 
 ### 1.2.软件架构  
 
+#### 1.2.1.描述  
 基于SpringBoot，使用Netty进行通讯，使用Protobuff进行序列化。
+#### 1.2.2.架构图
+![输入图片说明](https://images.gitee.com/uploads/images/2020/1003/081836_11cb7094_1738997.png "QQ图片20201003081726.png")
+
 
 ### 1.3.使用说明  
 
