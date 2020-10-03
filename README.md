@@ -1,81 +1,46 @@
-![DSS](images/visualis.png)
-====
+# [EasyRpc](https://mdui.org)
 
-[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+## 1.1.介绍  
 
-[English](README.md) | 中文
+简单易用的轻量级rpc框架，支持并发，快速便捷，持续优化中。
 
-## 简介
+## 1.2.软件架构  
 
-Visualis是一个基于宜信的开源项目[Davinci](https://github.com/edp963/davinci)开发的数据可视化BI工具。现已被集成到数据应用开发门户[DataSphere Studio](https://github.com/WeBankFinTech/DataSphereStudio)中。
+### 1.2.1.描述  
+基于SpringBoot，使用Netty进行通讯，使用Protobuff进行序列化。
+### 1.2.2.架构图
+![输入图片说明](https://images.gitee.com/uploads/images/2020/1003/082024_285eae25_1738997.png "QQ图片20201003081942.png")
 
-Visualis支持拖拽式报表定义、图表联动、钻取、全局筛选、多维分析、实时查询等数据开发探索的分析模式，并做了水印、数据质量校验等金融级增强。
+## 1.3.使用说明  
 
-## 功能特性
+1.在SpringBoot启动类添加@EnableEasyrpc，默认扫描启动类所在包及以下的包；  
+2.通过在服务类上使用@Exporter注解可直接暴露服务；  
+3.通过@Fetcher注解可直接远程引入服务到接口属性，直接调用接口属性像在本地一样使用远程服务。
 
-基于达芬奇项目, Visualis与DataSphere Studio结合，一同实现了以下特性：
-* 图表水印
-* 数据质量校验
-* 图表展示优化
-* 对接Linkis计算中间件
-* Scriptis结果集一键可视化
-* 外部应用参数支持
-* Dashboard/Display集成为DataSphere Studio的工作流节点
+## 1.4.注意事项
 
-Visualis同时支持以下Davinci的原生功能：
-* **数据源**
-  * 支持JDBC数据源
-  * 支持CSV文件上传
-* **数据视图**
-  * 支持定义SQL模版
-  * 支持SQL高亮显示
-  * 支持SQL测试
-  * 支持回写操作
-* **可视组件**
-  * 支持预定义图表
-  * 支持控制器组件
-  * 支持自由样式
-* **交互能力**
-  * 支持可视组件全屏显示
-  * 支持可视组件本地控制器
-  * 支持可视组件间过滤联动
-  * 支持群控控制器可视组件
-  * 支持可视组件本地高级过滤器
-  * 支持大数据量展示分页和滑块
-* **集成能力**
-  * 支持可视组件CSV下载
-  * 支持可视组件公共分享
-  * 支持可视组件授权分享
-  * 支持仪表板公共分享
-  * 支持仪表板授权分享
+1.服务端必须实现接口，客户端必须通过该接口进行远程调用；  
+2.@Fetcher注解必须加在受Spring管理的Bean的属性上，才能引入远程服务对象；  
+3.服务端在application.properties中使用easyrpc.server.port=xxx属性，指定服务暴露端口；  
+4.客户端使用easyrpc.client.remoteUrl=127.0.0.1:8888,127.0.0.1:8889属性，指定全局服务引用地址，也可以通过@Fetcher注解的url属性指定，后者会覆盖前者，并且如果指定多个地址，会随机选取一个连接远程服务。
+
+## 1.5.application.properties配置  
+
+### 1.5.1.服务端配置  
+easyrpc.server.port:指定服务暴露端口  
+easyrpc.server.service.version:指定远程服务版本号  
+easyrpc.server.service.group:指定远程服务分组  
+
+### 1.5.2.客户端配置 
+easyrpc.client.remoteUrl:指定远程服务地址,格式(ip1:port1,ip2:port2)  
+easyrpc.client.service.version:指定远程服务版本号  
+easyrpc.client.service.group:指定远程服务分组  
+easyrpc.client.rpcTimeout:远程调用超时时间,默认5000毫秒
+  
+## 1.6.待更新特性  
+1.扩展点机制  
+2.支持注册中心  
+3.接口调用数据视图  
+  
 
 
-## 与DataSphere Studio继承
-
-Visualis与DataSphere Studio的数据开发、工作流调度和数据质量校验等模块无缝衔接，实现数据应用开发全流程的连贯顺滑用户体验。
-
-更多信息请访问[DataSphere Studio documentations]().
-
-![Visualis](images/Visualis_AppJoint.gif)
-
- 
-
-## 架构设计
-
-![Viusalis Architecture](images/architecture.png)
-
-## 文档
-
-[单独部署文档](visualis_docs/zh_CN/Visualis_deploy_doc_cn.md)
-
-[快速对接DSS和Linkis](visualis_docs/zh_CN/Visualis_dss_integration_cn.md)
-
-[Visualis与Davinci的区别](visualis_docs/zh_CN/Visualis_Davinci_difference_cn.md)
-
-## 交流贡献
-
-![communication](images/communication.png)
-
-## License
-
-Visualis is under the Apache 2.0 license. See the [License](LICENSE) file for details.
