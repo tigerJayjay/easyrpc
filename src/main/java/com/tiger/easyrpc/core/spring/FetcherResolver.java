@@ -1,11 +1,15 @@
 package com.tiger.easyrpc.core.spring;
 
+import com.tiger.easyrpc.common.SysCacheEnum;
 import com.tiger.easyrpc.core.ConsumerConfig;
 import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.annotation.Fetcher;
 import com.tiger.easyrpc.core.metadata.AnnotationMetadata;
 import com.tiger.easyrpc.core.metadata.FetcherMetadata;
 import com.tiger.easyrpc.core.metadata.MetadataManager;
+import com.tiger.easyrpc.registry.RegistryManager;
+import com.tiger.easyrpc.registry.cache.CacheManager;
+import com.tiger.easyrpc.registry.cache.ICache;
 import com.tiger.easyrpc.rpc.proxy.jdk.JdkProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +20,7 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 
+import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_MH;
 import static com.tiger.easyrpc.common.EasyrpcConstant.EMPTY_STR;
 
 public class FetcherResolver implements ApplicationListener<ContextRefreshedEvent> {
@@ -23,14 +28,6 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
 
     private AnnotationMetadata setMetadata(Fetcher fetcher,Object service){
         ConsumerConfig consumerConfig = EasyRpcManager.getInstance().getConsumerConfig();
-        String url = fetcher.url();
-        //优先使用Fetcher注解内配置，如果Fetcher未配置则使用全局配置
-        if(StringUtils.isEmpty(url)){
-            url = consumerConfig.getRemoteUrl();
-        }
-        if(StringUtils.isEmpty(url)){
-            throw new RuntimeException("服务注入失败，未设置服务url！");
-        }
         String version = fetcher.version();
         if(StringUtils.isEmpty(version)){
             version = consumerConfig.getVersion() == null ? EMPTY_STR : consumerConfig.getVersion();
@@ -39,7 +36,17 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
         if(StringUtils.isEmpty(group)){
             group = consumerConfig.getGroup() == null ? EMPTY_STR : consumerConfig.getGroup();
         }
-        FetcherMetadata  metadata = new FetcherMetadata(url,version,group,service);
+        //获取url,如果未在注解内指定则从全局配置获取url，全局未指定则从注册中心获取,优先级注解>全局配置>注册中心
+        ICache cacheProvider = CacheManager.instance().getCacheProvider(SysCacheEnum.serviceurl.getCacheName());
+        String serviceName = service.getClass().getName()+COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group;
+        String urlStr = String.valueOf(cacheProvider.get(serviceName));
+        if(!StringUtils.isEmpty(consumerConfig.getRemoteUrl())){
+            urlStr = consumerConfig.getRemoteUrl();
+        }
+        if(!StringUtils.isEmpty(fetcher.url())){
+            urlStr = fetcher.url();
+        }
+        FetcherMetadata  metadata = new FetcherMetadata(urlStr,version,group,service);
         return metadata;
     }
 
@@ -56,6 +63,8 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
+        //获取注册中心地址，刷到本地缓存
+        RegistryManager.getInstance().flushLocalCache();
         ApplicationContext applicationContext = contextRefreshedEvent.getApplicationContext();
         String[] beanNames = applicationContext.getBeanDefinitionNames();
         for (String beanName : beanNames) {
@@ -73,5 +82,6 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
                 MetadataManager.getInstance().setMetadata(metadata);
             }
         }
+
     }
 }

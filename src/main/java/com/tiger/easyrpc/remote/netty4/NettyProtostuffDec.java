@@ -8,6 +8,9 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.util.List;
 
+/**
+ * 使用protostuff将byte数组反序列化为对象
+ */
 public class NettyProtostuffDec extends ByteToMessageDecoder {
     private Class tClass;
 

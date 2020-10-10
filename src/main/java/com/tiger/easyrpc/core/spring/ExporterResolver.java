@@ -5,6 +5,7 @@ import com.tiger.easyrpc.core.ProviderConfig;
 import com.tiger.easyrpc.core.annotation.Exporter;
 import com.tiger.easyrpc.core.cache.server.ExportServiceManager;
 import com.tiger.easyrpc.core.util.BeanDefinitionRegistryUtils;
+import com.tiger.easyrpc.registry.RegistryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -18,7 +19,9 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 import static com.tiger.easyrpc.common.EasyrpcConstant.*;
@@ -98,30 +101,42 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, Ap
         }
     }
 
-
     private void addService(Class aClass){
-            Type[] genericInterfaces = aClass.getGenericInterfaces();
-            if(genericInterfaces.length == 0){
-                logger.info("服务类{}需要实现一个服务接口",aClass.getName());
-                throw new RuntimeException("{}服务类需要实现接口！");
-            }
-            Exporter annotation = (Exporter) aClass.getAnnotation(Exporter.class);
-            String group = annotation.group();
-            String version = annotation.version();
-            ProviderConfig providerConfig = EasyRpcManager.getInstance().getProviderConfig();
-            if(StringUtils.isEmpty(version)){
-                version = providerConfig.getVersion() == null ? EMPTY_STR : providerConfig.getVersion();
-            }
-            if(StringUtils.isEmpty(group)){
-                group = providerConfig.getGroup() == null ? EMPTY_STR : providerConfig.getGroup();
-            }
-            Class serviceInterface = (Class)genericInterfaces[0];
+        Type[] genericInterfaces = aClass.getGenericInterfaces();
+        if(genericInterfaces.length == 0){
+            logger.info("服务类{}需要实现一个服务接口",aClass.getName());
+            throw new RuntimeException("{}服务类需要实现接口！");
+        }
+        Exporter annotation = (Exporter) aClass.getAnnotation(Exporter.class);
+        String group = annotation.group();
+        String version = annotation.version();
+        ProviderConfig providerConfig = EasyRpcManager.getInstance().getProviderConfig();
+        if(StringUtils.isEmpty(version)){
+            version = providerConfig.getVersion() == null ? EMPTY_STR : providerConfig.getVersion();
+        }
+        if(StringUtils.isEmpty(group)){
+            group = providerConfig.getGroup() == null ? EMPTY_STR : providerConfig.getGroup();
+        }
+        Class serviceInterface = (Class)genericInterfaces[0];
+        try {
+            InetAddress localHost = InetAddress.getLocalHost();
+            //注册中心发布
+            RegistryManager.getInstance().regist(serviceInterface.getName()+
+                    COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group,localHost.getHostAddress()+COMMON_SYMBOL_MH+providerConfig.getPort());
             ExportServiceManager.services.put(serviceInterface.getName()+
-                    COMMON_SYMBOL_FH+version+COMMON_SYMBOL_FH+group,aClass);
+                    COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group,aClass);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("本机地址获取失败！");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
     }
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
+        //服务启动，发布服务注册事件，刷新客户端本地缓存
+        RegistryManager.getInstance().publishUrlChange();
         ApplicationContext applicationContext = contextRefreshedEvent.getApplicationContext();
         String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
         for (String beanDefinitionName : beanDefinitionNames) {

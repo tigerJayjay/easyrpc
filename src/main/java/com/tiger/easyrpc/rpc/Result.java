@@ -2,7 +2,10 @@ package com.tiger.easyrpc.rpc;
 
 import java.io.Serializable;
 
+import static com.tiger.easyrpc.common.EasyrpcConstant.DATA_TYPE_INVOKE;
+
 public class Result implements Serializable {
+    private Integer type = DATA_TYPE_INVOKE;
     private Long mesId;
     private Object result;
     private Throwable exception;
@@ -24,6 +27,14 @@ public class Result implements Serializable {
     }
     public void setException(Throwable exception) {
         this.exception = exception;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
     }
 
     @Override

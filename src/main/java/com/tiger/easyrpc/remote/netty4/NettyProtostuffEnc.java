@@ -5,7 +5,9 @@ import com.tiger.easyrpc.serialization.protostuff.ProtostuffDataOutput;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
-
+/**
+ * 使用protostuff将对象序列化为数组
+ */
 public class NettyProtostuffEnc extends MessageToByteEncoder {
     @Override
     protected void encode(ChannelHandlerContext channelHandlerContext, Object o, ByteBuf byteBuf) throws Exception {

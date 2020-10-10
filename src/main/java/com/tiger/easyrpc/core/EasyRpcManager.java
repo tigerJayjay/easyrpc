@@ -16,7 +16,15 @@ public class EasyRpcManager {
     private NettyServer nettyServer;
     private ProviderConfig providerConfig;
     private ConsumerConfig consumerConfig;
-    private ConfigCenter configCenter;
+    private RegistryConfig registryConfig;
+
+    public RegistryConfig getRegistryConfig() {
+        return registryConfig;
+    }
+
+    public void setRegistryConfig(RegistryConfig registryConfig) {
+        this.registryConfig = registryConfig;
+    }
 
     public static EasyRpcManager getInstance(){
         return manager;

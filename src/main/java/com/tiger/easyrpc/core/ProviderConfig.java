@@ -4,7 +4,7 @@ import com.tiger.easyrpc.core.entity.Service;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("easyrpc.server")
-public class ProviderConfig implements Config {
+public class ProviderConfig{
     private Service service;
     private Integer port;
 
@@ -34,9 +34,5 @@ public class ProviderConfig implements Config {
 
     public String getGroup() {
         return this.service.getGroup();
-    }
-
-    public void close() {
-
     }
 }

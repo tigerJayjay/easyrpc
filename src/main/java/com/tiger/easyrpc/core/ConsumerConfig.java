@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 
 @ConfigurationProperties("easyrpc.client")
-public class ConsumerConfig implements Config {
+public class ConsumerConfig{
     private String remoteUrl;
     private String interfacepath;
     private Service service;
@@ -57,11 +57,6 @@ public class ConsumerConfig implements Config {
 
     public void setInterfacepath(String interfacepath) {
         this.interfacepath = interfacepath;
-    }
-
-
-    public void close() {
-
     }
 
     public String getVersion(){

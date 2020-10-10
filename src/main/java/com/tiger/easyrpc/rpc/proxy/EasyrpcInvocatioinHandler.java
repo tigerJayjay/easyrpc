@@ -20,7 +20,9 @@ import java.lang.reflect.Method;
 
 import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_DH;
 
-
+/**
+ * jdk代理处理类，通过该类来调用Channel对象进行远程调用并获取远程返回结果
+ */
 public class EasyrpcInvocatioinHandler implements InvocationHandler {
     private Logger logger = LoggerFactory.getLogger(EasyrpcInvocatioinHandler.class);
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -40,10 +42,13 @@ public class EasyrpcInvocatioinHandler implements InvocationHandler {
         }
         AnnotationMetadata metadata = MetadataManager.getInstance().getMetadata(System.identityHashCode(proxy));
         FetcherMetadata fetcherMetadata = ((FetcherMetadata)metadata);
-        //获取url
-        String urlStr = fetcherMetadata.getUrl();
         String version = fetcherMetadata.getVersion();
         String group = fetcherMetadata.getGroup();
+        ConsumerConfig consumerConfig = EasyRpcManager.getInstance().getConsumerConfig();
+        String urlStr = fetcherMetadata.getUrl();
+        if(StringUtils.isEmpty(urlStr)){
+           throw new RuntimeException("无法获取可用服务，服务地址为空！");
+        }
         String url = getRandomUrl(urlStr);
         Long mesId = SnowflakeUtils.genId();
         //调用远程方法并返回
@@ -52,7 +57,6 @@ public class EasyrpcInvocatioinHandler implements InvocationHandler {
         MessageToChannelManager.messageToChannel.put(mesId,channel);
         channel.sendMessage(p);
         ResultFuture resultFuture = channel.getResultFuture();
-        ConsumerConfig consumerConfig = EasyRpcManager.getInstance().getConsumerConfig();
         Object result = resultFuture.getResult(consumerConfig.getRpcTimeout());
         MessageToChannelManager.messageToChannel.remove(mesId);
         return result;

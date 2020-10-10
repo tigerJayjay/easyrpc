@@ -4,7 +4,10 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import static com.tiger.easyrpc.common.EasyrpcConstant.DATA_TYPE_INVOKE;
+
 public  class Parameter implements Serializable {
+    private Integer type = DATA_TYPE_INVOKE;
     private Long mesId;
     private Object[] objs;
     private Class<?> clazz;
@@ -20,6 +23,14 @@ public  class Parameter implements Serializable {
         this.method = method;
         this.version = version;
         this.group = group;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
     }
 
     public Long getMesId() {
