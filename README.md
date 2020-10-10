@@ -51,5 +51,6 @@ easyrpc.registry.redis.pool.*:支持redispool所有配置
 1.扩展点机制  
 3.接口调用数据视图  
   
-
+## 1.7.使用示例
+使用示例请clone仓库easyrpcserver和easyrpcclient
 
