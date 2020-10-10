@@ -25,7 +25,7 @@
 1.服务端必须实现接口，客户端必须通过该接口进行远程调用；  
 2.@Fetcher注解必须加在受Spring管理的Bean的属性上，才能引入远程服务对象；  
 3.服务端在application.properties中使用easyrpc.server.port=xxx属性，指定服务暴露端口；  
-4.客户端使用easyrpc.client.remoteUrl=127.0.0.1:8888,127.0.0.1:8889属性，指定全局服务引用地址，也可以通过@Fetcher注解的url属性指定，后者会覆盖前者，并且如果指定多个地址，会随机选取一个连接远程服务。
+4.客户端使用easyrpc.client.remoteUrl=127.0.0.1:8888,127.0.0.1:8889属性，指定全局服务引用地址，也可以通过@Fetcher注解的url属性指定，后者会覆盖前者，并且如果指定多个地址，会随机选取一个连接远程服务。如果使用注册中心，remoteUrl使用本机真实ip，不能使用localhost或127.0.0.1  
 
 ## 1.5.application.properties配置  
 
@@ -40,9 +40,9 @@ easyrpc.client.service.version:指定远程服务版本号
 easyrpc.client.service.group:指定远程服务分组  
 easyrpc.client.rpcTimeout:远程调用超时时间,默认5000毫秒
 
-### 1.5.2.注册中心配置
+### 1.5.3.注册中心配置
 Easyrpc基于redis作为注册中心，目前只支持单机，后续添加集群，主从及哨兵支持。  
-easyrpc.registry.redis.host:redis ip地址，本机测试使用本机真实ip，不能使用localhost或127.0.0.1  
+easyrpc.registry.redis.host:redis ip地址
 easyrpc.registry.redis.port:redis端口  
 easyrpc.registry.redis.password:redis密码   
 easyrpc.registry.redis.timeout:redis连接超时时间，单位毫秒    
