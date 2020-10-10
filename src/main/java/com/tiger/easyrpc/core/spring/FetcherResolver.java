@@ -13,6 +13,8 @@ import com.tiger.easyrpc.registry.cache.ICache;
 import com.tiger.easyrpc.rpc.proxy.jdk.JdkProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cglib.proxy.InvocationHandler;
+import org.springframework.cglib.proxy.Proxy;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -26,7 +28,7 @@ import static com.tiger.easyrpc.common.EasyrpcConstant.EMPTY_STR;
 public class FetcherResolver implements ApplicationListener<ContextRefreshedEvent> {
     private Logger logger = LoggerFactory.getLogger(FetcherResolver.class);
 
-    private AnnotationMetadata setMetadata(Fetcher fetcher,Object service){
+    private AnnotationMetadata setMetadata(Fetcher fetcher,Class type){
         ConsumerConfig consumerConfig = EasyRpcManager.getInstance().getConsumerConfig();
         String version = fetcher.version();
         if(StringUtils.isEmpty(version)){
@@ -38,7 +40,7 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
         }
         //获取url,如果未在注解内指定则从全局配置获取url，全局未指定则从注册中心获取,优先级注解>全局配置>注册中心
         ICache cacheProvider = CacheManager.instance().getCacheProvider(SysCacheEnum.serviceurl.getCacheName());
-        String serviceName = service.getClass().getName()+COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group;
+        String serviceName = type.getName()+COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group;
         String urlStr = String.valueOf(cacheProvider.get(serviceName));
         if(!StringUtils.isEmpty(consumerConfig.getRemoteUrl())){
             urlStr = consumerConfig.getRemoteUrl();
@@ -46,7 +48,7 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
         if(!StringUtils.isEmpty(fetcher.url())){
             urlStr = fetcher.url();
         }
-        FetcherMetadata  metadata = new FetcherMetadata(urlStr,version,group,service);
+        FetcherMetadata  metadata = new FetcherMetadata(urlStr,version,group,null);
         return metadata;
     }
 
@@ -77,7 +79,7 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
                     continue;
                 }
                 Object o = setService(declaredField, bean);
-                AnnotationMetadata metadata = setMetadata(annotation, o);
+                AnnotationMetadata metadata = setMetadata(annotation, declaredField.getType());
                 metadata.setSource(o);
                 MetadataManager.getInstance().setMetadata(metadata);
             }
