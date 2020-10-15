@@ -8,6 +8,9 @@ import org.springframework.util.ObjectUtils;
 
 import java.beans.Introspector;
 
+/**
+ * Bean信息注册工具类
+ */
 public class BeanDefinitionRegistryUtils {
     public static void regist(BeanDefinitionRegistry registry, Class<?> clazz){
         if(ObjectUtils.isEmpty(clazz)){
@@ -16,6 +19,12 @@ public class BeanDefinitionRegistryUtils {
         regist(registry,clazz,Introspector.decapitalize(clazz.getSimpleName()));
     }
 
+    /**
+     * 注册bean
+     * @param registry Spring bean注册类
+     * @param clazz bean Class
+     * @param beanName bean名称
+     */
     public static void regist(BeanDefinitionRegistry registry, Class<?> clazz, String beanName){
         if(ObjectUtils.isEmpty(clazz)){
             return;

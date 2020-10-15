@@ -1,5 +1,7 @@
 package com.tiger.easyrpc.core.metadata;
-
+/**
+ * Fetcher注解元数据信息
+ */
 public class FetcherMetadata extends AnnotationMetadata{
     private String url;
     private String version;

@@ -2,6 +2,9 @@ package com.tiger.easyrpc.common;
 
 import java.io.File;
 
+/**
+ * Easyrpc常量类
+ */
 public class EasyrpcConstant {
     public static final String COMMON_SYMBOL_DH = ",";
     public static final String COMMON_SYMBOL_FH = ";";
@@ -27,5 +30,9 @@ public class EasyrpcConstant {
     public static final int CLIENT_STATUS_CONNECT = 2;
     public static final int CLIENT_STATUS_DISCONNECT = 3;
     public static final int CLIENT_STATUS_DIE = 4;
+
+    //注册中心 服务操作类型
+    public static final int OPR_REGIST = 0;
+    public static final int OPR_UNREGIST = 1;
 
 }

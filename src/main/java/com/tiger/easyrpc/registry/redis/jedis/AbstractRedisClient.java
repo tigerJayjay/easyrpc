@@ -6,6 +6,9 @@ import com.tiger.easyrpc.core.RegistryConfig;
 import com.tiger.easyrpc.registry.redis.IRedisClient;
 import redis.clients.jedis.JedisPoolConfig;
 
+/**
+ * Jedis客户端抽象类，用来统一配置redis参数
+ */
 public abstract class AbstractRedisClient implements IRedisClient {
     private JedisPoolConfig poolConfig;
     public AbstractRedisClient(){

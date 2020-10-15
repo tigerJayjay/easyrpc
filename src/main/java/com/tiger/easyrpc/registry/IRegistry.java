@@ -15,14 +15,15 @@ public interface IRegistry {
     Map<String, String> getServiceUrlList();
 
     /**
-     * 新增注册中心服务地址
-     * @param key
-     * @param value
+     * 注册中心服务地址更新
+     * @param key 服务名称:版本:分组
+     * @param value 服务地址 ip:port
+     * @param opr 操作类型 0：注册 1：下线
      */
-    boolean putServiceUrl(String key,String value);
+    boolean putServiceUrl(String key,String value,int opr);
 
     /**
-     * 删除注册中心服务地址
+     * 移除服务
      * @param key
      * @return
      */

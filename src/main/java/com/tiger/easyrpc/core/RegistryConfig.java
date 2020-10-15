@@ -4,15 +4,23 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Map;
 
+/**
+ * 注册中心配置类
+ */
 @ConfigurationProperties("easyrpc.registry.redis")
 public class RegistryConfig {
     public RegistryConfig(){
         EasyRpcManager.getInstance().setRegistryConfig(this);
     }
+    //redis地址
     private String host;
+    //端口
     private int port;
+    //连接超时时间
     private int timeout;
+    //密码
     private String password;
+    //连接池配置
     private Map<String,String> pool;
     public String getHost() {
         return host;

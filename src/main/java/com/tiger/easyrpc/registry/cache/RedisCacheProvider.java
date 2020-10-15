@@ -5,6 +5,9 @@ import com.tiger.easyrpc.registry.redis.IRedisClient;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * redis缓存操作类
+ */
 public class RedisCacheProvider extends AbstractCacheProvider {
     private IRedisClient redisClient;
 

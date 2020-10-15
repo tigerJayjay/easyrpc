@@ -5,6 +5,7 @@ import com.tiger.easyrpc.core.ProviderConfig;
 import com.tiger.easyrpc.core.annotation.Exporter;
 import com.tiger.easyrpc.core.cache.server.ExportServiceManager;
 import com.tiger.easyrpc.core.util.BeanDefinitionRegistryUtils;
+import com.tiger.easyrpc.core.util.PathResolverUtils;
 import com.tiger.easyrpc.registry.RegistryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,21 +18,19 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
-import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Enumeration;
+import java.util.List;
 
-import static com.tiger.easyrpc.common.EasyrpcConstant.*;
+import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_MH;
+import static com.tiger.easyrpc.common.EasyrpcConstant.EMPTY_STR;
 
 /**
  * 找到标有ExporterScan注解的类，获取注解值，加载指定包中带有Exporter的类放入Set中
  */
 public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, ApplicationListener<ContextRefreshedEvent> {
     private Logger logger = LoggerFactory.getLogger(ExporterResolver.class);
-    private final String FILE_NAME = "class";
     public ExporterResolver(){
     }
     public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
@@ -48,60 +47,12 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, Ap
 
     private void resolver(){
         String scanPath = EasyRpcManager.getInstance().getServiceScanPath();
-        String filePath = scanPath.replace(COMMON_SYMBOL_YJH,COMMON_SYMBOL_XG);
-        try {
-            Enumeration<URL> urls = getClassLoader().getResources(filePath);
-            while(urls.hasMoreElements()){
-                URL u = urls.nextElement();
-                String path = u.toURI().getPath();
-                addClass(path,scanPath);
-            }
-        }catch (Exception e){
-            logger.error("扫描解析服务类异常！",e);
-        }
-    }
-
-    private ClassLoader getClassLoader(){
-        return Thread.currentThread().getContextClassLoader();
-    }
-
-    private void addClass(String path, String packageName) {
-        File f = new File(path);
-        File[] fs = f.listFiles();
-        for (File ft : fs) {
-            String name = ft.getName();
-            StringBuilder sb = null;
-            if (ft.isFile() && FILE_NAME.equals(name.substring(name.lastIndexOf(COMMON_SYMBOL_YJH) + 1, name.length()))) {
-                sb = new StringBuilder().append(packageName).append(COMMON_SYMBOL_YJH);
-                String fileName = ft.getName();
-                String clazz = sb.append(fileName.substring(0, fileName.indexOf(COMMON_SYMBOL_YJH))).toString();
-                try {
-                    Class cls = Class.forName(clazz);
-                    if (cls.isAnnotationPresent(Exporter.class)) {
-                        ExportServiceManager.exporterClass.add(cls);
-                    }
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("Class:" + clazz + "not found");
-                }
-            } else if (ft.isDirectory()) {
-                String path1 = "";
-                String packageName1 = "";
-                sb = new StringBuilder();
-                sb.append(path);
-                if (!path.endsWith(COMMON_SYMBOL_XG)) {
-                    sb.append(COMMON_SYMBOL_XG);
-                }
-                sb.append(name);
-                path1 = sb.toString();
-                sb.delete(0, path1.length());
-                sb.append(packageName).append(COMMON_SYMBOL_YJH).append(name);
-                packageName1 = sb.toString();
-                addClass(path1, packageName1);
-            }
-        }
+        List<Class> classes = PathResolverUtils.resolverByAnnotation(scanPath, Exporter.class);
+        ExportServiceManager.exporterClass.addAll(classes);
     }
 
     private void addService(Class aClass){
+        //获取接口
         Type[] genericInterfaces = aClass.getGenericInterfaces();
         if(genericInterfaces.length == 0){
             logger.info("服务类{}需要实现一个服务接口",aClass.getName());
@@ -133,10 +84,12 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, Ap
 
     }
 
+    /**
+     * 当接收到服务启动通知，发布服务并保存服务类信息
+     * @param contextRefreshedEvent
+     */
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        //服务启动，发布服务注册事件，刷新客户端本地缓存
-        RegistryManager.getInstance().publishUrlChange();
         ApplicationContext applicationContext = contextRefreshedEvent.getApplicationContext();
         String[] beanDefinitionNames = applicationContext.getBeanDefinitionNames();
         for (String beanDefinitionName : beanDefinitionNames) {
@@ -147,5 +100,7 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, Ap
             }
             this.addService(bean.getClass());
         }
+        //服务启动，发布服务注册事件，刷新客户端本地缓存
+        RegistryManager.getInstance().publishUrlChange();
     }
 }

@@ -4,6 +4,9 @@ import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.Random;
 
+/**
+ * 雪花id生成工具类
+ */
 public class SnowflakeUtils {
 
     /** 时间部分所占长度 */

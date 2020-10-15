@@ -5,8 +5,6 @@ import com.tiger.easyrpc.registry.cache.CacheManager;
 import com.tiger.easyrpc.registry.cache.CacheTypeEnum;
 import com.tiger.easyrpc.registry.cache.ICache;
 import com.tiger.easyrpc.registry.redis.RedisRegistry;
-import com.tiger.easyrpc.remote.ClientManager;
-import com.tiger.easyrpc.remote.api.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisPubSub;
@@ -72,10 +70,23 @@ public class RegistryManager {
      */
     public void regist(String service,String url) throws InterruptedException {
         check();
-        boolean b = this.registry.putServiceUrl(service, url);
+        boolean b = this.registry.putServiceUrl(service, url,OPR_REGIST);
         while(!b){
             Thread.sleep(500);
-            b = this.registry.putServiceUrl(service, url);
+            b = this.registry.putServiceUrl(service, url,OPR_REGIST);
+        }
+    }
+
+    /**
+     * 服务下线
+     * @param url 服务地址 ip:port
+     */
+    public void unregist(String url) throws InterruptedException{
+        check();
+        boolean b = this.registry.putServiceUrl(null, url,OPR_UNREGIST);
+        while(!b){
+            Thread.sleep(500);
+            b = this.registry.putServiceUrl(null, url,OPR_UNREGIST);
         }
     }
 
@@ -91,6 +102,9 @@ public class RegistryManager {
         logger.info("客户端对连接失败服务发起移除投票！");
     }
 
+    /**
+     * 注册中心管理器初始化
+     */
     public void init(){
         this.isInit = true;
         this.registry = new RedisRegistry();
@@ -148,7 +162,7 @@ public class RegistryManager {
                 }
                 if (sb.length() > 0) {
                     String redisUrl = sb.substring(0, sb.length() - 1);
-                    registry.putServiceUrl(k, redisUrl);
+                    registry.putServiceUrl(k, redisUrl,0);
                     if (!redisUrl.equals(v)) {
                         changed.set(true);
                     }
@@ -161,6 +175,11 @@ public class RegistryManager {
         }
     }
 
+    /**
+     * 测试远程服务是否可用
+     * @param url 远程服务地址
+     * @return true：可用 false：不可用
+     */
     private boolean test(String url){
         String[] urlAndPort = url.split(COMMON_SYMBOL_MH);
         if(urlAndPort.length != 2){

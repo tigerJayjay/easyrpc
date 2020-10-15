@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 本地缓存操作类
+ */
 public class LocalCacheProvider extends AbstractCacheProvider {
 
     private Map<String, Object> cacheMap = new ConcurrentHashMap<String, Object>();

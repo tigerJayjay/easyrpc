@@ -48,6 +48,7 @@ public class NettyServer {
         b.group(bossGroup,workerGroup)
                 .channel(NioServerSocketChannel.class)//调用channel()方法通过new ReflectiveChannelFactory(channelClass)实例化channel工厂
                 .childOption(NioChannelOption.TCP_NODELAY,true)
+                .childOption(ChannelOption.SO_KEEPALIVE,true)
                 .option(NioChannelOption.SO_BACKLOG,1024)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -60,8 +61,7 @@ public class NettyServer {
                         socketChannel.pipeline().addLast(new NettyProtostuffEnc());
                         socketChannel.pipeline().addLast(new NettyServerHandler());
                     }
-                })
-                .childOption(ChannelOption.SO_KEEPALIVE,true);
+                });
         //绑定端口，开始接收即将到来的连接
         ChannelFuture f = b.bind(port).sync();
     }

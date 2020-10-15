@@ -18,12 +18,22 @@ public class EasyRpcManager {
     private ConsumerConfig consumerConfig;
     private RegistryConfig registryConfig;
 
+    private boolean isServer;
+
     public RegistryConfig getRegistryConfig() {
         return registryConfig;
     }
 
     public void setRegistryConfig(RegistryConfig registryConfig) {
         this.registryConfig = registryConfig;
+    }
+
+    public boolean isServer() {
+        return isServer;
+    }
+
+    public void setServer(boolean server) {
+        isServer = server;
     }
 
     public static EasyRpcManager getInstance(){
@@ -62,6 +72,9 @@ public class EasyRpcManager {
         this.consumerConfig = consumerConfig;
     }
 
+    /**
+     * 暴露服务
+     */
     public void exportService(){
         //未设置服务端端口，不暴露服务
         if(providerConfig == null || providerConfig.getPort() == null){

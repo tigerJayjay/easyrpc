@@ -1,5 +1,8 @@
 package com.tiger.easyrpc.core.entity;
 
+/**
+ * 服务信息配置类
+ */
 public class Service {
 
     private String version;

@@ -10,6 +10,9 @@ import redis.clients.jedis.params.SetParams;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Jedis单实例操作客户端
+ */
 public class SingleRedisClient extends AbstractRedisClient {
     private JedisPool jedisPool;
     public SingleRedisClient(){
@@ -112,4 +115,6 @@ public class SingleRedisClient extends AbstractRedisClient {
         }
         return result;
     }
+
+
 }

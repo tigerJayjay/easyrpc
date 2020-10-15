@@ -24,23 +24,25 @@ import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_DH;
  * jdk代理处理类，通过该类来调用Channel对象进行远程调用并获取远程返回结果
  */
 public class EasyrpcInvocatioinHandler implements InvocationHandler {
+    private Object o;
+    public EasyrpcInvocatioinHandler(){
+        o = new Object();
+    }
     private Logger logger = LoggerFactory.getLogger(EasyrpcInvocatioinHandler.class);
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
-        if (method.getDeclaringClass() == Object.class) {
-            return method.invoke(proxy, args);
-        }
         if ("toString".equals(methodName) && parameterTypes.length == 0) {
-            return proxy.toString();
+            return o.toString();
+        }else if ("hashCode".equals(methodName) && parameterTypes.length == 0) {
+            return o.hashCode();
+        }else if ("equals".equals(methodName) && parameterTypes.length == 1) {
+            return o.equals(args[0]);
+        }else if (method.getDeclaringClass() == Object.class) {
+            return method.invoke(o, args);
         }
-        if ("hashCode".equals(methodName) && parameterTypes.length == 0) {
-            return proxy.hashCode();
-        }
-        if ("equals".equals(methodName) && parameterTypes.length == 1) {
-            return proxy.equals(args[0]);
-        }
-        AnnotationMetadata metadata = MetadataManager.getInstance().getMetadata(System.identityHashCode(proxy));
+        //通过代理对象获取Fetcher元数据信息，用来组装远程服务信息
+        AnnotationMetadata metadata = MetadataManager.getInstance().getMetadata(proxy);
         FetcherMetadata fetcherMetadata = ((FetcherMetadata)metadata);
         String version = fetcherMetadata.getVersion();
         String group = fetcherMetadata.getGroup();

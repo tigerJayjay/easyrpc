@@ -1,5 +1,8 @@
 package com.tiger.easyrpc.core.metadata;
 
+/**
+ * Exporter注解元数据信息
+ */
 public class ExporterMetadata extends AnnotationMetadata {
     private String version;
     private String group;

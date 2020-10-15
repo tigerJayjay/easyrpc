@@ -1,5 +1,8 @@
 package com.tiger.easyrpc.core.urlstrategy;
 
+/**
+ * 随机选择策略
+ */
 public class RandomStrategy implements IStrategy {
     @Override
     public String select(String[] url) {

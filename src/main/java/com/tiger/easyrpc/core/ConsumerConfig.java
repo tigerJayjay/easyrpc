@@ -5,9 +5,12 @@ import com.tiger.easyrpc.core.entity.Service;
 import com.tiger.easyrpc.rpc.Parameter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-
+/**
+ * 客户端配置类
+ */
 @ConfigurationProperties("easyrpc.client")
 public class ConsumerConfig{
+    //远程地址
     private String remoteUrl;
     private String interfacepath;
     private Service service;

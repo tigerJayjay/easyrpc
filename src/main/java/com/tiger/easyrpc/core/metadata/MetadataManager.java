@@ -4,19 +4,18 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MetadataManager {
-    private Map<Integer,AnnotationMetadata> metadataMap = new ConcurrentHashMap<Integer,AnnotationMetadata>();
+    private Map<Object,AnnotationMetadata> metadataMap = new ConcurrentHashMap<Object,AnnotationMetadata>();
     private static MetadataManager metadataManager = new MetadataManager();
     private MetadataManager(){}
 
     public static MetadataManager getInstance(){
         return metadataManager;
     }
-    public AnnotationMetadata getMetadata(Integer sourcePath){
-        return metadataMap.get(sourcePath);
+    public AnnotationMetadata getMetadata(Object source){
+        return metadataMap.get(source);
     }
 
     public void setMetadata(AnnotationMetadata metadata){
-        int sourcePath = System.identityHashCode(metadata.getSource());
-        this.metadataMap.put(sourcePath,metadata);
+        this.metadataMap.put(metadata.getSource(),metadata);
     }
 }

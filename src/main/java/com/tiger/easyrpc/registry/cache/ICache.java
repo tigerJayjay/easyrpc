@@ -5,7 +5,6 @@ import java.util.Set;
 
 /**
  * 缓存接口，主要为本地和redis缓存两种实现
- *
  */
 public interface ICache {
 

@@ -49,6 +49,10 @@ public class NettyClient implements Client {
         return this.status == CLIENT_STATUS_CONNECT;
     }
 
+    /**
+     * 检测url地址是否合法
+     * @param url
+     */
     private void resolverUrl(String url){
         try{
             String[] split = url.split(COMMON_SYMBOL_MH);
@@ -62,6 +66,9 @@ public class NettyClient implements Client {
         }
     }
 
+    /**
+     * 客户端连接初始化
+     */
     public void init(){
         status = CLIENT_STATUS_INIT;
         workerGroup = new NioEventLoopGroup();
@@ -86,6 +93,10 @@ public class NettyClient implements Client {
         });
     }
 
+    /**
+     * 连接远程服务
+     * @throws Exception
+     */
     public  void connect() throws Exception{
         if(this.status < CLIENT_STATUS_INIT){
             init();
@@ -96,6 +107,9 @@ public class NettyClient implements Client {
         channelFuture = b.connect(host,port).sync();
     }
 
+    /**
+     * 连接重试
+     */
     public void retryConnect(){
         while(!isConnected() && retryCount.get() < CONNECT_RETRY_COUNT){
             retryCount.getAndIncrement();
@@ -108,6 +122,10 @@ public class NettyClient implements Client {
         }
     }
 
+    /**
+     * 关闭连接
+     * @throws InterruptedException
+     */
     public void close() throws InterruptedException {
         Channel channel = this.channelFuture.channel();
         if(channel.isOpen()){
@@ -115,11 +133,17 @@ public class NettyClient implements Client {
         }
     }
 
+    /**
+     * 发送信息
+     * @param object
+     */
     public  void  sendMessage(Object object){
         this.channelFuture.channel().writeAndFlush(object);
     }
 
-
+    /**
+     * 消息处理器
+     */
     public class NettyClientHandler extends ChannelInboundHandlerAdapter {
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -151,6 +175,7 @@ public class NettyClient implements Client {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg){
             Result res = (Result)msg;
+            //返回心跳信息，不处理
             if(res.getType() == DATA_TYPE_IDLE){
                 return;
             }

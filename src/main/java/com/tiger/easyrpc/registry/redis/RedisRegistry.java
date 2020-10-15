@@ -4,14 +4,18 @@ import com.tiger.easyrpc.registry.IRegistry;
 import com.tiger.easyrpc.registry.redis.jedis.SingleRedisClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.params.SetParams;
 
 import java.util.Collections;
 import java.util.Map;
 
-import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_DH;
+import static com.tiger.easyrpc.common.EasyrpcConstant.*;
 
+/**
+ * Reids注册中心，提供发布，删除服务接口
+ */
 public class RedisRegistry implements IRegistry {
     private Logger logger = LoggerFactory.getLogger(RedisRegistry.class);
     private static final String REGISTRY_CACHE_NAME = "service";
@@ -37,27 +41,51 @@ public class RedisRegistry implements IRegistry {
         return serviceUrl;
     }
 
-
-
     @Override
-    public boolean putServiceUrl(String key, String value) {
+    public boolean putServiceUrl(String key, String value,int opr) {
         check();
         try{
             if(lock(value)){
-                String arg1 = redisClient.hget(REGISTRY_CACHE_NAME, key);
-                if(arg1 != null){
-                    if(arg1.contains(value)) return true;
-                    StringBuilder sb = new StringBuilder(arg1);
-                    sb.append(COMMON_SYMBOL_DH);
-                    sb.append(value);
-                    value = sb.toString();
+                if(opr == OPR_REGIST){
+                    String arg1 = redisClient.hget(REGISTRY_CACHE_NAME, key);
+                    if(!StringUtils.isEmpty(arg1)){
+                        if(arg1.contains(value)) return true;
+                        StringBuilder sb = new StringBuilder(arg1);
+                        sb.append(COMMON_SYMBOL_DH);
+                        sb.append(value);
+                        value = sb.toString();
+                    }
+                    redisClient.hset(REGISTRY_CACHE_NAME, key, value);
+                    logger.info("成功注册服务{}",key);
+                }else if(opr == OPR_UNREGIST){
+                    Map<String, String> services = redisClient.hgetAll(REGISTRY_CACHE_NAME);
+                    final String waitRemove = value;
+                    services.forEach((service,url)->{
+                        if(!StringUtils.isEmpty(url)){
+                            if(url.contains(waitRemove)){
+                                String[] redisUrls = url.split(COMMON_SYMBOL_DH);
+                                StringBuilder sb = new StringBuilder();
+                                for (String redisUrl : redisUrls){
+                                    if(waitRemove.equals(redisUrl)) continue;
+                                    sb.append(waitRemove);
+                                    sb.append(COMMON_SYMBOL_DH);
+                                }
+                                if(!StringUtils.isEmpty(sb.toString())){
+                                    String putValue = sb.substring(0,sb.length()-1);
+                                    redisClient.hset(REGISTRY_CACHE_NAME, service, putValue);
+                                }else{
+                                    redisClient.hdel(REGISTRY_CACHE_NAME,service);
+                                }
+                                logger.info("成功下线服务{}",service);
+                            }
+                        }
+                    });
+
                 }
-                redisClient.hset(REGISTRY_CACHE_NAME, key, value);
-                logger.info("成功注册服务{}",key);
                 return true;
          }
         }catch (Exception e){
-            throw new RuntimeException("注册服务地址异常！",e);
+            throw new RuntimeException("更新服务地址异常！",e);
         }finally {
             unlock(value);
         }

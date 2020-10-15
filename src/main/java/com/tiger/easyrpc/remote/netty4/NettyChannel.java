@@ -5,7 +5,9 @@ import com.tiger.easyrpc.remote.api.Channel;
 import com.tiger.easyrpc.rpc.ResultFuture;
 
 
-
+/**
+ * Netty数据通道实现类
+ */
 public class NettyChannel implements Channel {
     private static String lock = "lock";
     private String url;

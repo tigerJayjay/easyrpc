@@ -6,6 +6,10 @@ import com.tiger.easyrpc.rpc.proxy.ServiceProxy;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 
+/**
+ * Jdk代理，用来代理远程服务
+ * @param <T>
+ */
 public class JdkProxy<T> implements ServiceProxy<T> {
     public T getProxy(T t) {
         Field f = (Field)t;

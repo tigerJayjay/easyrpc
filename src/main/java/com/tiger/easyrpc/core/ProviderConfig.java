@@ -3,6 +3,9 @@ package com.tiger.easyrpc.core;
 import com.tiger.easyrpc.core.entity.Service;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * 服务端配置类
+ */
 @ConfigurationProperties("easyrpc.server")
 public class ProviderConfig{
     private Service service;

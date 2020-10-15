@@ -13,8 +13,6 @@ import com.tiger.easyrpc.registry.cache.ICache;
 import com.tiger.easyrpc.rpc.proxy.jdk.JdkProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cglib.proxy.InvocationHandler;
-import org.springframework.cglib.proxy.Proxy;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -25,6 +23,9 @@ import java.lang.reflect.Field;
 import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_MH;
 import static com.tiger.easyrpc.common.EasyrpcConstant.EMPTY_STR;
 
+/**
+ * 扫描bean中是否有被@Fetcher注解的属性，如果有注入远程服务的代理对象
+ */
 public class FetcherResolver implements ApplicationListener<ContextRefreshedEvent> {
     private Logger logger = LoggerFactory.getLogger(FetcherResolver.class);
 
@@ -52,6 +53,12 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
         return metadata;
     }
 
+    /**
+     * 创建远程服务jdk代理对象
+     * @param field
+     * @param bean
+     * @return
+     */
     private Object setService(Field field,Object bean){
         JdkProxy jdkProxy = new JdkProxy();
         Object serviceProxy = jdkProxy.getProxy(field);
@@ -79,6 +86,7 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
                     continue;
                 }
                 Object o = setService(declaredField, bean);
+                //设置Fetcher元数据信息
                 AnnotationMetadata metadata = setMetadata(annotation, declaredField.getType());
                 metadata.setSource(o);
                 MetadataManager.getInstance().setMetadata(metadata);

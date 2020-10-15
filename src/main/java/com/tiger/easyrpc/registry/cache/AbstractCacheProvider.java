@@ -10,12 +10,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 缓存抽象类
+ */
 public abstract class AbstractCacheProvider implements ICache {
-
-
+    //缓存名
     private String cacheName;
-
-
     public AbstractCacheProvider(String cacheName) {
         super();
         this.cacheName = cacheName;
