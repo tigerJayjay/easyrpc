@@ -17,6 +17,15 @@ public class ConsumerConfig{
     private Parameter parameter;
     //远程调用超时时间 毫秒
     private Long rpcTimeout = 5000l;
+    private boolean enable;
+
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
 
     public Long getRpcTimeout() {
         return rpcTimeout;

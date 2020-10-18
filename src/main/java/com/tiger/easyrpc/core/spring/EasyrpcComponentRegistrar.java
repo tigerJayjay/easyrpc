@@ -22,12 +22,10 @@ public class EasyrpcComponentRegistrar implements ImportBeanDefinitionRegistrar 
         if(enableServer){
             EasyRpcManager.getInstance().setServiceScanPath(introspectedClass.getPackage().getName());
             registExporterResolver();
-            EasyRpcManager.getInstance().setServer(true);
         }
         if(enableClient){
             registFetcherResolver();
         }
-        registBeanImporter();
         registCloseResolver();
     }
 
@@ -37,10 +35,6 @@ public class EasyrpcComponentRegistrar implements ImportBeanDefinitionRegistrar 
 
     private void registFetcherResolver(){
         BeanDefinitionRegistryUtils.regist(beanDefinitionRegistry,FetcherResolver.class);
-    }
-
-    private void registBeanImporter(){
-        BeanDefinitionRegistryUtils.regist(beanDefinitionRegistry,EasyrpcComponentImporter.class);
     }
 
     private void registCloseResolver(){

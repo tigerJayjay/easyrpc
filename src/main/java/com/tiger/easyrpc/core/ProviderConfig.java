@@ -10,6 +10,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ProviderConfig{
     private Service service;
     private Integer port;
+    private boolean enable;
+
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
 
     public ProviderConfig(){
         EasyRpcManager.getInstance().setProviderConfig(this);

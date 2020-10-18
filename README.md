@@ -30,11 +30,13 @@
 ## 1.5.application.properties配置  
 
 ### 1.5.1.服务端配置  
+easyrpc.server.enable:是否开启服务端功能，默认false
 easyrpc.server.port:指定服务暴露端口  
 easyrpc.server.service.version:指定远程服务版本号  
 easyrpc.server.service.group:指定远程服务分组  
 
 ### 1.5.2.客户端配置 
+easyrpc.client.enable:是否开启客户端功能，默认false
 easyrpc.client.remoteUrl:指定远程服务地址,格式(ip1:port1,ip2:port2)  
 easyrpc.client.service.version:指定远程服务版本号  
 easyrpc.client.service.group:指定远程服务分组  
@@ -47,6 +49,9 @@ easyrpc.registry.redis.port:redis端口
 easyrpc.registry.redis.password:redis密码   
 easyrpc.registry.redis.timeout:redis连接超时时间，单位毫秒    
 easyrpc.registry.redis.pool.*:支持redispool所有配置    
+
+### 1.5.4.全局配置
+easyrpc.auto:是否开启自动配置，默认为true
 ## 1.6.待更新特性  
 1.扩展点机制  
 3.接口调用数据视图  

@@ -2,7 +2,7 @@ package com.tiger.easyrpc.core.spring;
 
 import com.tiger.easyrpc.core.Closable;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextStoppedEvent;
+import org.springframework.context.event.ContextClosedEvent;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,9 +26,9 @@ public class ApplicationCloseManager  {
     public List<Closable> getClose(){
         return Collections.unmodifiableList(close);
     }
-    static class EasyrpcServerCloseListener implements ApplicationListener<ContextStoppedEvent>{
+    static class EasyrpcServerCloseListener implements ApplicationListener<ContextClosedEvent>{
         @Override
-        public void onApplicationEvent(ContextStoppedEvent contextStoppedEvent) {
+        public void onApplicationEvent(ContextClosedEvent contextStoppedEvent) {
             close.forEach(item->{
                 item.close();
             });

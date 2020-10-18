@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.tiger.easyrpc.core.spring.EasyRpcAutoConfiguration
+org.springframework.context.ApplicationListener=\
+com.tiger.easyrpc.core.spring.ApplicationCloseManager.EasyrpcServerCloseListener,\
+com.tiger.easyrpc.core.spring.EasyRpcServicePublishListener

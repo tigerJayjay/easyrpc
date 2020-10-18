@@ -29,7 +29,7 @@ public class EasyRpcManager {
     }
 
     public boolean isServer() {
-        return isServer;
+        return providerConfig !=null && providerConfig.isEnable();
     }
 
     public void setServer(boolean server) {
