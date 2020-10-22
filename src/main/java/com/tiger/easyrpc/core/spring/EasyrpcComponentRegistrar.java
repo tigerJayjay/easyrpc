@@ -19,8 +19,8 @@ public class EasyrpcComponentRegistrar implements ImportBeanDefinitionRegistrar 
         EnableEasyrpc annotation = introspectedClass.getAnnotation(EnableEasyrpc.class);
         boolean enableClient = annotation.enableClient();
         boolean enableServer = annotation.enableServer();
+        EasyRpcManager.getInstance().setServiceScanPath(introspectedClass.getPackage().getName());
         if(enableServer){
-            EasyRpcManager.getInstance().setServiceScanPath(introspectedClass.getPackage().getName());
             registExporterResolver();
         }
         if(enableClient){

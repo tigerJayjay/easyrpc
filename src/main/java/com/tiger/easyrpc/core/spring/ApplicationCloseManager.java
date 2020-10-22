@@ -29,6 +29,7 @@ public class ApplicationCloseManager  {
     static class EasyrpcServerCloseListener implements ApplicationListener<ContextClosedEvent>{
         @Override
         public void onApplicationEvent(ContextClosedEvent contextStoppedEvent) {
+            System.out.println("下线服务");
             close.forEach(item->{
                 item.close();
             });

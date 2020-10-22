@@ -162,7 +162,7 @@ public class RegistryManager {
                 }
                 if (sb.length() > 0) {
                     String redisUrl = sb.substring(0, sb.length() - 1);
-                    registry.putServiceUrl(k, redisUrl,0);
+                    registry.putServiceUrl(k, redisUrl,OPR_UPDATE);
                     if (!redisUrl.equals(v)) {
                         changed.set(true);
                     }

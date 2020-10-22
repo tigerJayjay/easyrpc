@@ -24,6 +24,7 @@ public class RedisRegistry implements IRegistry {
     private static final String UNLOCK_SUCCESS = "1";
     private long expireTime = 30000;//锁过期时间
     private IRedisClient redisClient;
+    private static WatchDog watchLock = new WatchDog(1);
 
     public RedisRegistry(){
         this.redisClient = new SingleRedisClient();
@@ -41,11 +42,21 @@ public class RedisRegistry implements IRegistry {
         return serviceUrl;
     }
 
+    private void setWatchDog(String value){
+        watchLock.setWatchKey(value);
+        watchLock.work();
+       if(!watchLock.isInit()){
+           watchLock.init(redisClient,REGISTRY_LOCK);
+       }
+    }
+
     @Override
     public boolean putServiceUrl(String key, String value,int opr) {
         check();
         try{
             if(lock(value)){
+                System.out.println(value);
+                setWatchDog(value);
                 if(opr == OPR_REGIST){
                     String arg1 = redisClient.hget(REGISTRY_CACHE_NAME, key);
                     if(!StringUtils.isEmpty(arg1)){
@@ -81,6 +92,8 @@ public class RedisRegistry implements IRegistry {
                         }
                     });
 
+                }else if(opr == OPR_UPDATE){
+                    redisClient.hset(REGISTRY_CACHE_NAME, key, value);
                 }
                 return true;
          }
@@ -88,6 +101,7 @@ public class RedisRegistry implements IRegistry {
             throw new RuntimeException("更新服务地址异常！",e);
         }finally {
             unlock(value);
+            watchLock.sleep();
         }
         return false;
 

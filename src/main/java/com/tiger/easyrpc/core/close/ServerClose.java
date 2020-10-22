@@ -27,6 +27,7 @@ public class ServerClose implements Closable {
             }
             String hostName = localHost.getHostAddress();
             Integer port = EasyRpcManager.getInstance().getProviderConfig().getPort();
+            System.out.println("下线服务");
             try {
                 //通知注册中心，下线当前服务
                 RegistryManager.getInstance().unregist(hostName + COMMON_SYMBOL_MH + port);

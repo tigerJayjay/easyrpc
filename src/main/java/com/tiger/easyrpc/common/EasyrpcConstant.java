@@ -32,7 +32,8 @@ public class EasyrpcConstant {
     public static final int CLIENT_STATUS_DIE = 4;
 
     //注册中心 服务操作类型
-    public static final int OPR_REGIST = 0;
-    public static final int OPR_UNREGIST = 1;
+    public static final int OPR_REGIST = 0; //新增
+    public static final int OPR_UNREGIST = 1;//注册
+    public static final int OPR_UPDATE = 2; //更新
 
 }
