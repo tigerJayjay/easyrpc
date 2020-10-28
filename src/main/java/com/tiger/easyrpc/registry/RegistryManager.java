@@ -1,10 +1,12 @@
 package com.tiger.easyrpc.registry;
 
 import com.tiger.easyrpc.common.SysCacheEnum;
+import com.tiger.easyrpc.common.URLUtils;
 import com.tiger.easyrpc.registry.cache.CacheManager;
 import com.tiger.easyrpc.registry.cache.CacheTypeEnum;
 import com.tiger.easyrpc.registry.cache.ICache;
 import com.tiger.easyrpc.registry.redis.RedisRegistry;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisPubSub;
@@ -16,8 +18,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.tiger.easyrpc.common.EasyrpcConstant.*;
 
@@ -29,10 +29,9 @@ public class RegistryManager {
     private static RegistryManager registryManager = new RegistryManager();
     private static ScheduledExecutorService scheculeService = Executors.newScheduledThreadPool(1);
     private static ExecutorService subService = Executors.newFixedThreadPool(2);
-    private static final String URL_CHANNEL = "urlChannel";
-    private static final String URL_CHANGE = "urlChange";
-    private static final String VOTE_CHANNEL = "voteChannel";
-    private static final String VOTE_MES = "vote";
+    private final String URL_CHANNEL = "urlChannel";
+    private final String URL_CHANGE = "urlChange";
+    private final String VOTE_CHANNEL = "voteChannel";
     private IRegistry registry;
     private boolean isInit;
 
@@ -96,10 +95,24 @@ public class RegistryManager {
         logger.info("url变动事件发布");
     }
 
-    public void vote(){
-        check();
-        this.registry.publish(VOTE_CHANNEL,VOTE_MES);
+    /**
+     * 服务端不可用投票
+     * @param url 服务端地址
+     */
+    public boolean vote(String url){
         logger.info("客户端对连接失败服务发起移除投票！");
+        check();
+        return this.registry.startVote(VOTE_CHANNEL, url);
+    }
+
+    /**
+     * 获取投票结果
+     * @param url 服务端地址
+     * @return
+     */
+    public String voteResult(String url){
+        check();
+        return this.registry.getVoteResult(url);
     }
 
     /**
@@ -108,8 +121,8 @@ public class RegistryManager {
     public void init(){
         this.isInit = true;
         this.registry = new RedisRegistry();
-        //初始化定时器，移除不可用服务
-        scheculeService.scheduleAtFixedRate(new UrlCheckTask(),0,30, TimeUnit.SECONDS);
+        //初始化定时器，每30秒对服务进行存活检测，移除不可用服务
+        //scheculeService.scheduleAtFixedRate(new UrlCheckTask(),0,30, TimeUnit.SECONDS);
         //设置服务变更监听
         subService.execute(new Runnable() {
             @Override
@@ -129,50 +142,24 @@ public class RegistryManager {
                 registry.subscribe(new JedisPubSub() {
                     @Override
                     public void onMessage(String channel, String message) {
-                        boolean isActive = test(message);
-
+                        if(StringUtils.isEmpty(message)){
+                            return;
+                        }
+                        String url = message;
+                        String localUrl = URLUtils.getLocalUrl();
+                        //对本机地址发起的投票，本机不参与投票
+                        if(localUrl.equals(url)){
+                            return;
+                        }
+                        boolean isActive = test(url);
+                        //可用+1
+                        if(isActive){
+                            registry.vote(url);
+                        }
                     }
                 },VOTE_CHANNEL);
             }
         });
-    }
-
-    class UrlCheckTask implements Runnable{
-        @Override
-        public void run() {
-            check();
-            Map<String, String> serviceUrlList = registry.getServiceUrlList();
-            AtomicBoolean changed = new AtomicBoolean(false);
-            for (Map.Entry<String, String> entry : serviceUrlList.entrySet()) {
-                String k = entry.getKey();
-                String v = entry.getValue();
-                String[] urls = v.split(COMMON_SYMBOL_DH);
-                StringBuilder sb = new StringBuilder();
-                for (String url : urls) {
-                    if (test(url)) {
-                        sb.append(url).append(COMMON_SYMBOL_FH);
-                    }else{
-                        //发起投票，只要有一个客户端能正常调用服务，说明服务正常，不能从注册中心移除
-
-                    }
-                }
-                if(sb.length() == 0){
-                    registry.delServiceUrl(k);
-                    return;
-                }
-                if (sb.length() > 0) {
-                    String redisUrl = sb.substring(0, sb.length() - 1);
-                    registry.putServiceUrl(k, redisUrl,OPR_UPDATE);
-                    if (!redisUrl.equals(v)) {
-                        changed.set(true);
-                    }
-                }
-            }
-            //服务url发生变动，发布变动事件
-            if(changed.get()){
-                registry.publish(URL_CHANNEL,URL_CHANGE);
-            }
-        }
     }
 
     /**

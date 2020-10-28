@@ -26,4 +26,11 @@ public interface IRedisClient {
 
     Long hdel(String key,String field);
 
+    Long incr(String key);
+
+    String get(String key);
+
+    void del(String key);
+
+
 }

@@ -1,6 +1,7 @@
 package com.tiger.easyrpc.common;
 
 import java.io.File;
+import java.util.Random;
 
 /**
  * Easyrpc常量类
@@ -20,7 +21,7 @@ public class EasyrpcConstant {
     //服务端重连次数
     public static final int CONNECT_RETRY_COUNT = 3;
     //重连间隔
-    public static final int CONNECT_RETRY_INTERVAL = 5000;
+    public static final int CONNECT_RETRY_INTERVAL = new Random().nextInt(5);
     //扫描无效客户端间隔时间
     public static final long NO_CONNECT_CLIENT_SCAN_INTERVAL = 30000;
 

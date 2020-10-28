@@ -1,6 +1,8 @@
 package com.tiger.easyrpc.rpc;
 
 import com.tiger.easyrpc.remote.RpcException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -10,6 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * 保存异步调用信息，客户端发送消息可获得此对象，并通过此对象获取异步调用结果是否已经返回
  */
 public class ResultFuture {
+    private static Logger logger = LoggerFactory.getLogger(ResultFuture.class);
     private ReentrantLock lock = new ReentrantLock();
     private Condition getResult = lock.newCondition();
     private volatile Object result;
@@ -22,7 +25,8 @@ public class ResultFuture {
             }
             boolean await = getResult.await(timeout, TimeUnit.MILLISECONDS);
             if(!await){
-                throw new RpcException("远程调用超时！",null);
+                logger.error("error",new RpcException("远程调用超时！",null));
+                return null;
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

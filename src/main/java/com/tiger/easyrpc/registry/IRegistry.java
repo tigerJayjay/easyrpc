@@ -39,4 +39,20 @@ public interface IRegistry {
      * 发布注册中心变动事件
      */
     void publish(String channel,String mes);
+
+    /**
+     * 投票+1
+     */
+    void vote(String key);
+
+    /**
+     * 发起投票，如果当前url被其他客户端发起投票，本次投票申请失败
+     * @param url 服务url
+     * @param channel 通道名称
+     * @return 发起结果
+     */
+    boolean startVote(String channel,String url);
+
+    String getVoteResult(String key);
+
 }

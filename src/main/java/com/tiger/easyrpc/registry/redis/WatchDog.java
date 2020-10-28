@@ -1,5 +1,8 @@
 package com.tiger.easyrpc.registry.redis;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -9,6 +12,7 @@ import java.util.concurrent.TimeUnit;
  * 不再为分布式锁续期，直到下个线程正常执行为止
  */
 public class WatchDog extends ScheduledThreadPoolExecutor {
+    private Logger logger = LoggerFactory.getLogger(WatchDog.class);
     private volatile boolean isWork;
     private volatile boolean init;
     private volatile String watchKey;
@@ -51,7 +55,7 @@ public class WatchDog extends ScheduledThreadPoolExecutor {
                 Object result = redisClient.eval(script, Collections.singletonList(registryLock),
                         Collections.singletonList(watchKey));
                 if (UNLOCK_SUCCESS.equals(result.toString())) {
-                    System.out.println("增加存活时间");
+                   logger.trace("{}分布式锁存活时间增加！",watchKey);
                 }
             }catch (Exception e){
                 e.printStackTrace();

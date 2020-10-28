@@ -1,5 +1,6 @@
 package com.tiger.easyrpc.remote;
 
+import com.tiger.easyrpc.registry.RegistryManager;
 import com.tiger.easyrpc.remote.api.Client;
 import com.tiger.easyrpc.remote.netty4.NettyClient;
 
@@ -19,15 +20,26 @@ import static com.tiger.easyrpc.common.EasyrpcConstant.*;
 public class ClientManager {
     private static ClientManager clientManager = new ClientManager();
     private static ConcurrentHashMap<String, Client> clientMap = new ConcurrentHashMap<String,Client>();
-
+    private final int VOTE_WAIT_TIME = 5000;
     private ClientManager(){
         init();
     }
 
     public void init(){
-        ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(2);
-        scheduledExecutorService.scheduleAtFixedRate(new ClientScanTask(),0, NO_CONNECT_CLIENT_SCAN_INTERVAL, TimeUnit.MILLISECONDS);
+        ScheduledExecutorService scheduledExecutorService = new ScheduledThreadPoolExecutor(1);
+        scheduledExecutorService.scheduleWithFixedDelay(new ClientScanTask(),0, NO_CONNECT_CLIENT_SCAN_INTERVAL, TimeUnit.MILLISECONDS);
     }
+
+    private String  getVoteResult(String url,RegistryManager registryManager){
+        try {
+            Thread.sleep(VOTE_WAIT_TIME);
+            return registryManager.voteResult(url);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     class ClientScanTask implements Runnable{
         @Override
         public void run() {
@@ -36,21 +48,36 @@ public class ClientManager {
                 if(value instanceof NettyClient){
                     NettyClient var1 = (NettyClient)value;
                     if(var1.getStatus() == CLIENT_STATUS_DISCONNECT){
-                        var1.retryConnect();
-                    }
-                    if(var1.getStatus() == CLIENT_STATUS_DIE){
-                        try {
-                            var1.close();
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
+                        //客户端与服务端断开连接，发起投票，确定是否剔除服务
+                        RegistryManager registryManager = RegistryManager.getInstance();
+                        String url = var1.getHost() + COMMON_SYMBOL_MH + var1.getPort();
+                        registryManager.vote(url);
+                        //发起投票成功
+                        //获取结果
+                        String s = getVoteResult(url,registryManager);
+                        System.out.println("投票结果:"+s);
+                        if(s != null && Integer.valueOf(s) > 1){
+                            //重连3次
+                            var1.retryConnect();
+                        }else{
+                            try {
+                                //下线服务
+                                registryManager.unregist(url);
+                                //关闭连接
+                                var1.close();
+                                //移除客户端缓存
+                                clientMap.remove(url);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
-                        clientMap.remove(entry.getKey());
                     }
                 }
 
             }
         }
     }
+
 
     public static ClientManager getInstance(){
         return clientManager;

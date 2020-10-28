@@ -3,12 +3,15 @@ package com.tiger.easyrpc.remote.netty4;
 import com.tiger.easyrpc.remote.ClientManager;
 import com.tiger.easyrpc.remote.api.Channel;
 import com.tiger.easyrpc.rpc.ResultFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
  * Netty数据通道实现类
  */
 public class NettyChannel implements Channel {
+    private static Logger logger = LoggerFactory.getLogger(NettyChannel.class);
     private static String lock = "lock";
     private String url;
     private ResultFuture resultFuture;
@@ -34,7 +37,8 @@ public class NettyChannel implements Channel {
                 try {
                     client.connect();
                 } catch (Exception e) {
-                    throw new RuntimeException("远程服务连接失败！",e);
+                    logger.error("error",new RuntimeException("远程服务连接失败！",e));
+                    return;
                 }
                 client.sendMessage(o);
                 return;

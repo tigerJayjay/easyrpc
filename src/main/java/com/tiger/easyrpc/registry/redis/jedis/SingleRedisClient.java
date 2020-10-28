@@ -116,5 +116,39 @@ public class SingleRedisClient extends AbstractRedisClient {
         return result;
     }
 
+    @Override
+    public Long incr(String key) {
+        Jedis resource = jedisPool.getResource();
+        Long result = null;
+        try{
+            result =  resource.incr(key);
+        }finally {
+            resource.close();
+        }
+        return result;
+    }
+
+    @Override
+    public String get(String key) {
+        Jedis resource = jedisPool.getResource();
+        String result = null;
+        try{
+            result =  resource.get(key);
+        }finally {
+            resource.close();
+        }
+        return result;
+    }
+
+    @Override
+    public void del(String key) {
+        Jedis resource = jedisPool.getResource();
+        try{
+           resource.del(key);
+        }finally {
+            resource.close();
+        }
+    }
+
 
 }
