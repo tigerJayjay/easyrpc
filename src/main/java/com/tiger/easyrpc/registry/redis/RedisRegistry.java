@@ -83,7 +83,7 @@ public class RedisRegistry implements IRegistry {
                                 StringBuilder sb = new StringBuilder();
                                 for (String redisUrl : redisUrls){
                                     if(waitRemove.equals(redisUrl)) continue;
-                                    sb.append(waitRemove);
+                                    sb.append(redisUrl);
                                     sb.append(COMMON_SYMBOL_DH);
                                 }
                                 if(!StringUtils.isEmpty(sb.toString())){

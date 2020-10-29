@@ -84,7 +84,6 @@ public class RegistryManager {
         check();
         boolean b = this.registry.putServiceUrl(null, url,OPR_UNREGIST);
         while(!b){
-            Thread.sleep(500);
             b = this.registry.putServiceUrl(null, url,OPR_UNREGIST);
         }
     }
@@ -92,7 +91,6 @@ public class RegistryManager {
     public void publishUrlChange(){
         check();
         this.registry.publish(URL_CHANNEL,URL_CHANGE);
-        logger.info("url变动事件发布");
     }
 
     /**
@@ -130,7 +128,6 @@ public class RegistryManager {
                 registry.subscribe(new JedisPubSub() {
                     @Override
                     public void onMessage(String channel, String message) {
-                        logger.info("url变动事件消费");
                         flushLocalCache();
                     }
                 },URL_CHANNEL);
@@ -147,8 +144,9 @@ public class RegistryManager {
                         }
                         String url = message;
                         String localUrl = URLUtils.getLocalUrl();
+                        String serverUrl = url.split(COMMON_SYMBOL_MH)[0];
                         //对本机地址发起的投票，本机不参与投票
-                        if(localUrl.equals(url)){
+                        if(localUrl.equals(serverUrl)){
                             return;
                         }
                         boolean isActive = test(url);

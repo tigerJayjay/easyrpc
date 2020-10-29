@@ -17,7 +17,7 @@ public class ServerClose implements Closable {
         if(server) {
             try {
                 //通知注册中心，下线当前服务
-                RegistryManager.getInstance().unregist(URLUtils.getLocalUrl());
+                RegistryManager.getInstance().unregist(URLUtils.getLocalServerUrlAndPort());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

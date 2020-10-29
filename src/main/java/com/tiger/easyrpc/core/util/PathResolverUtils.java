@@ -49,10 +49,11 @@ public class PathResolverUtils {
      * 扫描Jar包
      */
     private static void scanClassJar(String path,ScanConsumer<String,String> consumer) throws IOException, ClassNotFoundException {
-        String[] jarUrl = path.split(jarFileSplit);
-        String jarPath = jarUrl[0];
+        int lastSplit = path.lastIndexOf(jarFileSplit);
+        int firstSplit = path.indexOf(jarFileSplit);
+        String jarPath = path.substring(0,firstSplit);
         jarPath = jarPath.replace(fileHeader, "");
-        String packPath = jarUrl[1];
+        String packPath = path.substring(lastSplit+1);
         if(packPath.startsWith(jarSpitPath))
             packPath = packPath.substring(1);
         JarFile jarFile = new JarFile(jarPath);
@@ -60,8 +61,7 @@ public class PathResolverUtils {
         while(entries.hasMoreElements()){
             JarEntry jarEntry = entries.nextElement();
             String jarClassPath = jarEntry.getName();
-
-            if(jarClassPath.startsWith(packPath) && !jarClassPath.equals(packPath)){
+            if(jarClassPath.indexOf(packPath)!=-1 && !jarClassPath.endsWith(packPath)){
                 String className = jarClassPath.substring(jarClassPath.lastIndexOf(packPath)).
                         replace(jarSpitPath,COMMON_SYMBOL_YJH);
                 if(className.endsWith(FILE_NAME)){
