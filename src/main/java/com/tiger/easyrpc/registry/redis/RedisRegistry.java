@@ -1,5 +1,6 @@
 package com.tiger.easyrpc.registry.redis;
 
+import com.tiger.easyrpc.common.SnowflakeUtils;
 import com.tiger.easyrpc.registry.IRegistry;
 import com.tiger.easyrpc.registry.redis.jedis.SingleRedisClient;
 import org.slf4j.Logger;
@@ -56,10 +57,10 @@ public class RedisRegistry implements IRegistry {
 
     @Override
     public boolean putServiceUrl(String key, String value,int opr) {
+        String requestId = String.valueOf(SnowflakeUtils.genId());
         check();
         try{
-            if(lock(value)){
-                System.out.println(value);
+            if(lock(requestId)){
                 setWatchDog(value);
                 if(opr == OPR_REGIST){
                     String arg1 = redisClient.hget(REGISTRY_CACHE_SERVER, key);
@@ -104,7 +105,7 @@ public class RedisRegistry implements IRegistry {
         }catch (Exception e){
             throw new RuntimeException("更新服务地址异常！",e);
         }finally {
-            unlock(value);
+            unlock(requestId);
             watchLock.sleep();
         }
         return false;
@@ -138,7 +139,13 @@ public class RedisRegistry implements IRegistry {
     @Override
     public void vote(String key) {
         check();
-        redisClient.incr(key);
+        String script =
+                "if redis.call('exists',KEYS[1]) == 1 then" +
+                        "   return call('incr',KEYS[1]) " +
+                        "else" +
+                        "   return 0 " +
+                        "end";
+        evalResult(script,Collections.singletonList(key),Collections.singletonList(key));
     }
 
     @Override

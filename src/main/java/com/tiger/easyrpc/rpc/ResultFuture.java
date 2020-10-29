@@ -12,7 +12,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * 保存异步调用信息，客户端发送消息可获得此对象，并通过此对象获取异步调用结果是否已经返回
  */
 public class ResultFuture {
-    private static Logger logger = LoggerFactory.getLogger(ResultFuture.class);
     private ReentrantLock lock = new ReentrantLock();
     private Condition getResult = lock.newCondition();
     private volatile Object result;
@@ -25,8 +24,7 @@ public class ResultFuture {
             }
             boolean await = getResult.await(timeout, TimeUnit.MILLISECONDS);
             if(!await){
-                logger.error("error",new RpcException("远程调用超时！",null));
-                return null;
+                throw new RpcException("远程调用超时！",null);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
