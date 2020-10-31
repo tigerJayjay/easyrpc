@@ -100,7 +100,7 @@ public class NettyServer {
                 }
                 ctx.writeAndFlush(result);
             }catch (Exception e){
-                result.setException(new RpcException("远程调用异常！",e));
+                result.setException(new RpcException("远程调用异常！"));
                 ctx.writeAndFlush(result);
                 logger.error("服务处理异常！",e);
             }finally{

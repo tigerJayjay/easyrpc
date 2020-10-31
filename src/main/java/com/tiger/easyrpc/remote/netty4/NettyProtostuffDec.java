@@ -23,6 +23,7 @@ public class NettyProtostuffDec extends ByteToMessageDecoder {
         try {
             byte[] dstBytes = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(dstBytes,0,byteBuf.readableBytes());
+            System.out.println("字节数:"+dstBytes.length);
             ObjectDataInput di = new ProtostuffDataInput(dstBytes, tClass);
             list.add(di.readObject()) ;
         } catch (Exception e) {

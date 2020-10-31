@@ -113,41 +113,66 @@ public class NettyClient implements Client {
      * 连接远程服务
      * @throws Exception
      */
-    public  void connect() throws Exception{
+    public synchronized void connect(){
         if(this.status < CLIENT_STATUS_INIT){
             init();
         }
         if(this.isConnected()){
             return;
         }
-        channelFuture = b.connect(host,port).sync();
+        try {
+            channelFuture = b.connect(host,port).sync();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
      * 连接重试
      */
     public void retryConnect(){
-        while(!isConnected() && retryCount.get() < CONNECT_RETRY_COUNT){
-            retryCount.getAndIncrement();
-            try {
-                Thread.sleep(CONNECT_RETRY_INTERVAL);
-                this.connect();
-                return;
-            }catch (Exception e){
-                logger.info("重连服务第{}次！",retryCount.get());
+//        while(!isConnected() && status != CLIENT_STATUS_DIE){
+//            retryCount.getAndIncrement();
+//            try {
+//                Thread.sleep(new Random().nextInt(CONNECT_RETRY_INTERVAL)+1);
+//                this.connect();
+//                return;
+//            }catch (Exception e){
+//                logger.info("重连服务第{}次！",retryCount.get());
+//            }
+//        }
+        channelFuture = b.connect(host,port);
+        channelFuture.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                if (!channelFuture.isSuccess()) {
+                    final EventLoop loop = channelFuture.channel().eventLoop();
+                    loop.schedule(new Runnable() {
+                        @Override
+                        public void run() {
+                            logger.info("重连服务第{}次！",retryCount.addAndGet(1));
+                            try {
+                                retryConnect();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }, 1L, TimeUnit.SECONDS);
+                }
             }
-        }
+        });
     }
 
     /**
      * 关闭连接
      * @throws InterruptedException
      */
-    public void close() throws InterruptedException {
+    public void close(){
         Channel channel = this.channelFuture.channel();
         if(channel.isOpen()){
             channel.close();
         }
+        this.status = CLIENT_STATUS_DIE;
     }
 
     /**
@@ -155,7 +180,9 @@ public class NettyClient implements Client {
      * @param object
      */
     public  void  sendMessage(Object object){
+        System.out.println("writeflushbefore:"+System.currentTimeMillis());
         this.channelFuture.channel().writeAndFlush(object);
+        System.out.println("writeflushend:"+System.currentTimeMillis());
     }
 
     /**
@@ -180,17 +207,21 @@ public class NettyClient implements Client {
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             super.channelActive(ctx);
             NettyClient.this.status = CLIENT_STATUS_CONNECT;
+            //重置重试次数
+            retryCount.set(0);
             logger.info("连接成功！");
         }
 
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             NettyClient.this.status = CLIENT_STATUS_DISCONNECT;
+            retryConnect();
             logger.info("连接断开！");
         }
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg){
+            System.out.println("writereadbefore:"+System.currentTimeMillis());
             Result res = (Result)msg;
             //返回心跳信息，不处理
             if(res.getType() == DATA_TYPE_IDLE){
@@ -200,6 +231,8 @@ public class NettyClient implements Client {
             if(res.getException() != null){
                 throw new RuntimeException(res.getException());
             }
+            System.out.println("writereadend:"+System.currentTimeMillis());
+
         }
 
 

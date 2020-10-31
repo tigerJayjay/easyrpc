@@ -12,6 +12,7 @@ import redis.clients.jedis.params.SetParams;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.tiger.easyrpc.common.EasyrpcConstant.*;
 
@@ -74,29 +75,29 @@ public class RedisRegistry implements IRegistry {
                     redisClient.hset(REGISTRY_CACHE_SERVER, key, value);
                     logger.info("成功注册服务{}",key);
                 }else if(opr == OPR_UNREGIST){
-                    Map<String, String> services = redisClient.hgetAll(REGISTRY_CACHE_SERVER);
-                    final String waitRemove = value;
-                    services.forEach((service,url)->{
-                        if(!StringUtils.isEmpty(url)){
-                            if(url.contains(waitRemove)){
-                                String[] redisUrls = url.split(COMMON_SYMBOL_DH);
-                                StringBuilder sb = new StringBuilder();
-                                for (String redisUrl : redisUrls){
-                                    if(waitRemove.equals(redisUrl)) continue;
-                                    sb.append(redisUrl);
-                                    sb.append(COMMON_SYMBOL_DH);
+                    String waitRemove = value;
+                    Optional.ofNullable(redisClient.hgetAll(REGISTRY_CACHE_SERVER)).ifPresent(services->{
+                        services.forEach((service,url)->{
+                            if(!StringUtils.isEmpty(url)){
+                                if(url.contains(waitRemove)){
+                                    String[] redisUrls = url.split(COMMON_SYMBOL_DH);
+                                    StringBuilder sb = new StringBuilder();
+                                    for (String redisUrl : redisUrls){
+                                        if(waitRemove.equals(redisUrl)) continue;
+                                        sb.append(redisUrl);
+                                        sb.append(COMMON_SYMBOL_DH);
+                                    }
+                                    if(!StringUtils.isEmpty(sb.toString())){
+                                        String putValue = sb.substring(0,sb.length()-1);
+                                        redisClient.hset(REGISTRY_CACHE_SERVER, service, putValue);
+                                    }else{
+                                        redisClient.hdel(REGISTRY_CACHE_SERVER,service);
+                                    }
+                                    logger.info("成功下线服务{}",service);
                                 }
-                                if(!StringUtils.isEmpty(sb.toString())){
-                                    String putValue = sb.substring(0,sb.length()-1);
-                                    redisClient.hset(REGISTRY_CACHE_SERVER, service, putValue);
-                                }else{
-                                    redisClient.hdel(REGISTRY_CACHE_SERVER,service);
-                                }
-                                logger.info("成功下线服务{}",service);
                             }
-                        }
+                        });
                     });
-
                 }else if(opr == OPR_UPDATE){
                     redisClient.hset(REGISTRY_CACHE_SERVER, key, value);
                 }

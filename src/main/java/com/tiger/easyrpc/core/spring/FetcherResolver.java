@@ -42,14 +42,14 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
         //获取url,如果未在注解内指定则从全局配置获取url，全局未指定则从注册中心获取,优先级注解>全局配置>注册中心
         ICache cacheProvider = CacheManager.instance().getCacheProvider(SysCacheEnum.serviceurl.getCacheName());
         String serviceName = type.getName()+COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group;
-        String urlStr = String.valueOf(cacheProvider.get(serviceName));
+        Object urlStr = cacheProvider.get(serviceName);
         if(!StringUtils.isEmpty(consumerConfig.getRemoteUrl())){
             urlStr = consumerConfig.getRemoteUrl();
         }
         if(!StringUtils.isEmpty(fetcher.url())){
             urlStr = fetcher.url();
         }
-        FetcherMetadata  metadata = new FetcherMetadata(urlStr,version,group,null);
+        FetcherMetadata  metadata = new FetcherMetadata(urlStr==null ? null:String.valueOf(urlStr),version,group,null);
         return metadata;
     }
 
