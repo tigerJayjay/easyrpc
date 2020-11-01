@@ -71,9 +71,11 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, Ap
         Class serviceInterface = (Class)genericInterfaces[0];
         try {
             InetAddress localHost = InetAddress.getLocalHost();
-            //注册中心发布
-            RegistryManager.getInstance().regist(serviceInterface.getName()+
-                    COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group,localHost.getHostAddress()+COMMON_SYMBOL_MH+providerConfig.getPort());
+            if(EasyRpcManager.getInstance().isEnableRegistry()){
+                //注册中心发布
+                RegistryManager.getInstance().regist(serviceInterface.getName()+
+                        COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group,localHost.getHostAddress()+COMMON_SYMBOL_MH+providerConfig.getPort());
+            }
             ExportServiceManager.services.put(serviceInterface.getName()+
                     COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group,aClass);
         } catch (UnknownHostException e) {
@@ -100,7 +102,9 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, Ap
             }
             this.addService(bean.getClass());
         }
-        //服务启动，发布服务注册事件，刷新客户端本地缓存
-        RegistryManager.getInstance().publishUrlChange();
+        if(EasyRpcManager.getInstance().isEnableRegistry()){
+            //服务启动，发布服务注册事件，刷新客户端本地缓存
+            RegistryManager.getInstance().publishUrlChange();
+        }
     }
 }

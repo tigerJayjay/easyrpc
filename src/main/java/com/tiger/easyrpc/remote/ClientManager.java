@@ -1,5 +1,6 @@
 package com.tiger.easyrpc.remote;
 
+import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.registry.RegistryManager;
 import com.tiger.easyrpc.remote.api.Client;
 import com.tiger.easyrpc.remote.netty4.NettyClient;
@@ -30,8 +31,11 @@ public class ClientManager {
     }
 
     public void init(){
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleWithFixedDelay(new ClientScanTask(),0, NO_CONNECT_CLIENT_SCAN_INTERVAL, TimeUnit.MILLISECONDS);
+        //开启了注册中心配置，才会定时对不可用服务进行投票剔除
+        if(EasyRpcManager.getInstance().isEnableRegistry()){
+            ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+            scheduledExecutorService.scheduleWithFixedDelay(new ClientScanTask(),0, NO_CONNECT_CLIENT_SCAN_INTERVAL, TimeUnit.MILLISECONDS);
+        }
     }
 
     private String  getVoteResult(String url,RegistryManager registryManager){

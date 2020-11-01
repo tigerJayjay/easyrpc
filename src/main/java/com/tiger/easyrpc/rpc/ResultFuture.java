@@ -12,7 +12,6 @@ public class ResultFuture {
     private Semaphore semaphore = new Semaphore(0);
     private volatile Object result;
     public Object getResult(long timeout) throws RpcException{
-        System.out.println("getresbefore:"+System.currentTimeMillis());
         try{
             boolean await =  semaphore.tryAcquire(timeout, TimeUnit.MILLISECONDS);
             if(!await){
@@ -21,7 +20,6 @@ public class ResultFuture {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        System.out.println("getresend:"+System.currentTimeMillis());
         return result;
     }
 

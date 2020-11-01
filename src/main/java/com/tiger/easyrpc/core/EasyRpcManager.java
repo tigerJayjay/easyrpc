@@ -90,5 +90,8 @@ public class EasyRpcManager {
         }
     }
 
+    public boolean isEnableRegistry(){
+        return registryConfig == null ? false: true;
+    }
 
 }

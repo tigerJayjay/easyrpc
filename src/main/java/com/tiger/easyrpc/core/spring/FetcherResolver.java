@@ -39,13 +39,19 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
         if(StringUtils.isEmpty(group)){
             group = consumerConfig.getGroup() == null ? EMPTY_STR : consumerConfig.getGroup();
         }
+        Object urlStr = null;
         //获取url,如果未在注解内指定则从全局配置获取url，全局未指定则从注册中心获取,优先级注解>全局配置>注册中心
         ICache cacheProvider = CacheManager.instance().getCacheProvider(SysCacheEnum.serviceurl.getCacheName());
-        String serviceName = type.getName()+COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group;
-        Object urlStr = cacheProvider.get(serviceName);
+        //从注册中心获取
+        if(cacheProvider != null){
+            String serviceName = type.getName()+COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group;
+            urlStr = cacheProvider.get(serviceName);
+        }
+        //从全局配置获取
         if(!StringUtils.isEmpty(consumerConfig.getRemoteUrl())){
             urlStr = consumerConfig.getRemoteUrl();
         }
+        //从注解获取
         if(!StringUtils.isEmpty(fetcher.url())){
             urlStr = fetcher.url();
         }
@@ -72,8 +78,11 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        //获取注册中心地址，刷到本地缓存
-        RegistryManager.getInstance().flushLocalCache();
+        //是否开启了注册中心
+        if(EasyRpcManager.getInstance().isEnableRegistry()){
+            //获取注册中心地址，刷到本地缓存
+            RegistryManager.getInstance().flushLocalCache();
+        }
         ApplicationContext applicationContext = contextRefreshedEvent.getApplicationContext();
         String[] beanNames = applicationContext.getBeanDefinitionNames();
         for (String beanName : beanNames) {

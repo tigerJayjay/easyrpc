@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.tiger.easyrpc.common.EasyrpcConstant.*;
 
@@ -25,6 +27,9 @@ import static com.tiger.easyrpc.common.EasyrpcConstant.*;
  * Netty远程连接客户端类，直接与服务端进行数据传输
  */
 public class NettyClient implements Client {
+
+    private ReentrantLock lock = new ReentrantLock();
+    private Condition connected = lock.newCondition();
     private AtomicInteger retryCount = new AtomicInteger(0);
     private volatile int status;
     private Logger logger = LoggerFactory.getLogger(NettyClient.class);
@@ -120,11 +125,26 @@ public class NettyClient implements Client {
         if(this.isConnected()){
             return;
         }
-        try {
-            channelFuture = b.connect(host,port).sync();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        channelFuture = b.connect(host,port);
+        channelFuture.addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                if (!channelFuture.isSuccess()) {
+                    final EventLoop loop = channelFuture.channel().eventLoop();
+                    loop.schedule(new Runnable() {
+                        @Override
+                        public void run() {
+                            logger.info("重连服务第{}次！",retryCount.addAndGet(1));
+                            try {
+                                connect();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }, 1L, TimeUnit.SECONDS);
+                }
+            }
+        });
     }
 
     /**
@@ -142,25 +162,7 @@ public class NettyClient implements Client {
 //            }
 //        }
         channelFuture = b.connect(host,port);
-        channelFuture.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                if (!channelFuture.isSuccess()) {
-                    final EventLoop loop = channelFuture.channel().eventLoop();
-                    loop.schedule(new Runnable() {
-                        @Override
-                        public void run() {
-                            logger.info("重连服务第{}次！",retryCount.addAndGet(1));
-                            try {
-                                retryConnect();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }, 1L, TimeUnit.SECONDS);
-                }
-            }
-        });
+
     }
 
     /**
@@ -180,9 +182,21 @@ public class NettyClient implements Client {
      * @param object
      */
     public  void  sendMessage(Object object){
-        System.out.println("writeflushbefore:"+System.currentTimeMillis());
-        this.channelFuture.channel().writeAndFlush(object);
-        System.out.println("writeflushend:"+System.currentTimeMillis());
+        //并发情况下，可能会出现一个线程对client对象发起连接的过程中，另一个线程获取到该client发送信息，此时由于client还未
+        //成功连接到客户端，发送消息会失败，所以在这里如果client状态为还未成功连接，需要等待该客户端连接成功之后才能发送
+        if(isConnected()){
+            this.channelFuture.channel().writeAndFlush(object);
+        }else {
+            lock.lock();
+            try {
+                this.connected.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            this.channelFuture.channel().writeAndFlush(object);
+            lock.unlock();
+        }
+
     }
 
     /**
@@ -206,22 +220,23 @@ public class NettyClient implements Client {
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             super.channelActive(ctx);
+            lock.lock();
             NettyClient.this.status = CLIENT_STATUS_CONNECT;
             //重置重试次数
             retryCount.set(0);
             logger.info("连接成功！");
+            connected.signalAll();
+            lock.unlock();
         }
 
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             NettyClient.this.status = CLIENT_STATUS_DISCONNECT;
-            retryConnect();
             logger.info("连接断开！");
         }
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg){
-            System.out.println("writereadbefore:"+System.currentTimeMillis());
             Result res = (Result)msg;
             //返回心跳信息，不处理
             if(res.getType() == DATA_TYPE_IDLE){
@@ -231,7 +246,6 @@ public class NettyClient implements Client {
             if(res.getException() != null){
                 throw new RuntimeException(res.getException());
             }
-            System.out.println("writereadend:"+System.currentTimeMillis());
 
         }
 

@@ -28,34 +28,6 @@ import org.springframework.context.annotation.Configuration;
 public class EasyRpcAutoConfiguration {
 
     @Bean
-    @ConditionalOnProperty(
-            prefix = "easyrpc",
-            name = {"server.enable"},
-            havingValue = "true"
-    )
-    public ProviderConfig getProviderConfig(){
-        ProviderConfig providerConfig = new ProviderConfig();
-        return providerConfig;
-    }
-
-    @Bean
-    @ConditionalOnProperty(
-            prefix = "easyrpc",
-            name = {"client.enable"},
-            havingValue = "true"
-    )
-    public ConsumerConfig getConsumerConfig(){
-        ConsumerConfig consumerConfig = new ConsumerConfig();
-        return consumerConfig;
-    }
-
-    @Bean
-    public RegistryConfig getRegistryConfig(){
-        RegistryConfig registryConfig = new RegistryConfig();
-        return registryConfig;
-    }
-
-    @Bean
     public PropertiesUtils propertiesUtils(){
         PropertiesUtils propertiesUtils = new PropertiesUtils();
         return propertiesUtils;
@@ -67,28 +39,69 @@ public class EasyRpcAutoConfiguration {
         return springBeanUtils;
     }
 
-    @Bean
+    @Configuration(
+            proxyBeanMethods = false
+    )
     @ConditionalOnProperty(
             prefix = "easyrpc",
             name = {"server.enable"},
             havingValue = "true"
     )
-    @ConditionalOnMissingBean(ExporterResolver.class)
-    public ExporterResolver exporterResolver(){
-        ExporterResolver exporterResolver = new ExporterResolver();
-        return  exporterResolver;
+    static class ServerAutoConfiguration{
+        @Bean
+        @ConditionalOnMissingBean(ExporterResolver.class)
+        public ExporterResolver exporterResolver(){
+            ExporterResolver exporterResolver = new ExporterResolver();
+            return  exporterResolver;
+        }
+
+
+        @Bean
+        public ProviderConfig getProviderConfig(){
+            ProviderConfig providerConfig = new ProviderConfig();
+            return providerConfig;
+        }
+
     }
 
-    @Bean
+    @Configuration(
+            proxyBeanMethods = false
+    )
     @ConditionalOnProperty(
             prefix = "easyrpc",
             name = {"client.enable"},
             havingValue = "true"
     )
-    @ConditionalOnMissingBean(FetcherResolver.class)
-    public FetcherResolver fetcherResolver(){
-        FetcherResolver fetcherResolver = new FetcherResolver();
-        return  fetcherResolver;
+    static class ClientAutoConfiguration{
+        @Bean
+        @ConditionalOnMissingBean(FetcherResolver.class)
+        public FetcherResolver fetcherResolver(){
+            FetcherResolver fetcherResolver = new FetcherResolver();
+            return  fetcherResolver;
+        }
+    }
+
+    @Bean
+    public ConsumerConfig getConsumerConfig(){
+        ConsumerConfig consumerConfig = new ConsumerConfig();
+        return consumerConfig;
+    }
+
+    @Configuration(
+            proxyBeanMethods = false
+    )
+    @ConditionalOnProperty(
+            prefix = "easyrpc",
+            name = {"registry.enable"},
+            havingValue = "true"
+    )
+    static class RegistryConfiguration{
+
+        @Bean
+        public RegistryConfig getRegistryConfig(){
+            RegistryConfig registryConfig = new RegistryConfig();
+            return registryConfig;
+        }
     }
 
 }

@@ -9,7 +9,6 @@ public class MyClassVisitor extends ClassVisitor {
 
     public void visit(int version, int access, String name,
                       String signature, String superName, String[] interfaces) {
-        System.out.println(name + " extends " + superName + " {");
         if(interfaces!=null){
             for (int i = 0; i < interfaces.length; i++) {
                 System.err.println(interfaces[i]);

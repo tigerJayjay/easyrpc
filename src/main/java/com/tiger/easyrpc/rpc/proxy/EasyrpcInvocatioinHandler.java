@@ -57,11 +57,9 @@ public class EasyrpcInvocatioinHandler implements InvocationHandler {
         Parameter p = new Parameter(mesId,args,method.getDeclaringClass(),method,version,group);
         NettyChannel channel = new NettyChannel(url);
         MessageToChannelManager.messageToChannel.put(mesId,channel);
-        System.out.println("messageBefore:"+System.currentTimeMillis());
         channel.sendMessage(p);
         ResultFuture resultFuture = channel.getResultFuture();
         Object result = resultFuture.getResult(consumerConfig.getRpcTimeout());
-        System.out.println("messageend:"+System.currentTimeMillis());
         MessageToChannelManager.messageToChannel.remove(mesId);
         return result;
     }

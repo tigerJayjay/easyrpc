@@ -36,25 +36,26 @@
 ## 1.5.配置  
 
 ### 1.5.1.服务端配置  
-easyrpc.server.enable:是否开启服务端功能，默认false
-easyrpc.server.port:指定服务暴露端口  
-easyrpc.server.service.version:指定远程服务版本号  
-easyrpc.server.service.group:指定远程服务分组  
+- easyrpc.server.enable:是否开启服务端功能，默认false
+- easyrpc.server.port:指定服务暴露端口  
+- easyrpc.server.service.version:指定远程服务版本号  
+- easyrpc.server.service.group:指定远程服务分组  
 
 ### 1.5.2.客户端配置 
-easyrpc.client.enable:是否开启客户端功能，默认false
-easyrpc.client.remoteUrl:指定远程服务地址,格式(ip1:port1,ip2:port2)  
-easyrpc.client.service.version:指定远程服务版本号  
-easyrpc.client.service.group:指定远程服务分组  
-easyrpc.client.rpcTimeout:远程调用超时时间,默认5000毫秒
+- easyrpc.client.enable:是否开启客户端功能，默认false
+- easyrpc.client.remoteUrl:指定远程服务地址,格式(ip1:port1,ip2:port2)  
+- easyrpc.client.service.version:指定远程服务版本号  
+- easyrpc.client.service.group:指定远程服务分组  
+- easyrpc.client.rpcTimeout:远程调用超时时间,默认5000毫秒
 
 ### 1.5.3.注册中心配置
-Easyrpc基于redis作为注册中心，目前只支持单机，后续添加集群，主从及哨兵支持。  
-easyrpc.registry.redis.host:redis ip地址
-easyrpc.registry.redis.port:redis端口  
-easyrpc.registry.redis.password:redis密码   
-easyrpc.registry.redis.timeout:redis连接超时时间，单位毫秒    
-easyrpc.registry.redis.pool.xxx:支持redis.clients.jedis.JedisPoolConfig类的所有属性    
+Easyrpc基于redis作为注册中心，目前只支持单机，后续添加集群，主从及哨兵支持。 
+- easyrpc.registry.enable:是否开启注册中心支持，默认false  
+- easyrpc.registry.redis.host:redis ip地址
+- easyrpc.registry.redis.port:redis端口  
+- easyrpc.registry.redis.password:redis密码   
+- easyrpc.registry.redis.timeout:redis连接超时时间，单位毫秒    
+- easyrpc.registry.redis.pool.xxx:支持redis.clients.jedis.JedisPoolConfig类的所有属性    
 
 ### 1.5.4.全局配置
 easyrpc.auto:是否开启自动配置，默认为true
@@ -67,15 +68,15 @@ easyrpc.auto:是否开启自动配置，默认为true
 
 ## 1.8.相关实现说明
 ### 1.8.1.分布式锁
-1. 由于存在多个线程同时使用注册中心进行服务更新，为了保证服务更新操作的原子性，所以使用分布式锁，
+- 由于存在多个线程同时使用注册中心进行服务更新，为了保证服务更新操作的原子性，所以使用分布式锁，
 锁过期时间为30秒，为了防止更新操作时间过长导致的在此期间分布式锁失效，所以引入监视机制，每10秒更新一次
 锁存活时间。
 ### 1.8.2.服务下线投票机制
-1. 如果某个服务不可用，导致与客户端的断连（包含服务端宕机及偶发的网络不通），此时客户端会检测到断连通知，
+- 如果某个服务不可用，导致与客户端的断连（包含服务端宕机及偶发的网络不通），此时客户端会检测到断连通知，
 立刻将与此服务端连接的客户端对象标记为断连状态，并在30秒内发起服务不可用投票（投票机制介绍在1.2.3），如果
 投票结果为服务不可用，那么便直接从注册中心移除服务。
 ### 1.8.3.消息发送和接收
-1. 在easyrpc中，因为所有发送线程共用netty的Channel进行数据发送和接收，所以需要区分消息的来源，以便于将服务端
+- 在easyrpc中，因为所有发送线程共用netty的Channel进行数据发送和接收，所以需要区分消息的来源，以便于将服务端
 的响应消息正确传送回对应的线程，所以在easyrpc中抽象出一个Channel接口（非Netty中的Channel，下面说的都是此Channel）
 来收发数据，每次发送当前线程都创建一个新的Channel对象，调用发送接口，然后选择Netty客户端发送消息，消息对象中设置了一个
 消息标识，此标识全局唯一，并且与Channel对象关联，当客户端发送完消息，会返回一个ResultFuture来监视消息的状态，
