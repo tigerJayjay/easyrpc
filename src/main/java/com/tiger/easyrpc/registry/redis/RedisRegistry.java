@@ -142,7 +142,7 @@ public class RedisRegistry implements IRegistry {
         check();
         String script =
                 "if redis.call('exists',KEYS[1]) == 1 then" +
-                        "   return call('incr',KEYS[1]) " +
+                        "   return redis.call('incr',KEYS[1]) " +
                         "else" +
                         "   return 0 " +
                         "end";

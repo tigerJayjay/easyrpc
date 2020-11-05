@@ -17,8 +17,18 @@ public class EasyRpcManager {
     private ProviderConfig providerConfig;
     private ConsumerConfig consumerConfig;
     private RegistryConfig registryConfig;
+    private ApplicationConfig applicationConfig;
 
     private boolean isServer;
+
+
+    public ApplicationConfig getApplicationConfig() {
+        return applicationConfig;
+    }
+
+    public void setApplicationConfig(ApplicationConfig applicationConfig) {
+        this.applicationConfig = applicationConfig;
+    }
 
     public RegistryConfig getRegistryConfig() {
         return registryConfig;

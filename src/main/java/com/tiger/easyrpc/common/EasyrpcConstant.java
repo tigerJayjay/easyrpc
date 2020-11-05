@@ -17,10 +17,8 @@ public class EasyrpcConstant {
     public static final int DATA_TYPE_IDLE = 0;
     public static final int DATA_TYPE_INVOKE = 1;
 
-    //服务端重连次数
-    public static final int CONNECT_RETRY_COUNT = 3;
     //重连间隔
-    public static final int CONNECT_RETRY_INTERVAL = 5;
+    public static final long DEFAULT_RETRY_INTERVAL = 5000l;
     //扫描无效客户端间隔时间
     public static final long NO_CONNECT_CLIENT_SCAN_INTERVAL = 30000;
 

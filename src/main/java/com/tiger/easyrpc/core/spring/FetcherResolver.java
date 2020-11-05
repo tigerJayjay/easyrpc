@@ -1,6 +1,5 @@
 package com.tiger.easyrpc.core.spring;
 
-import com.tiger.easyrpc.common.SysCacheEnum;
 import com.tiger.easyrpc.core.ConsumerConfig;
 import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.annotation.Fetcher;
@@ -8,8 +7,6 @@ import com.tiger.easyrpc.core.metadata.AnnotationMetadata;
 import com.tiger.easyrpc.core.metadata.FetcherMetadata;
 import com.tiger.easyrpc.core.metadata.MetadataManager;
 import com.tiger.easyrpc.registry.RegistryManager;
-import com.tiger.easyrpc.registry.cache.CacheManager;
-import com.tiger.easyrpc.registry.cache.ICache;
 import com.tiger.easyrpc.rpc.proxy.jdk.JdkProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +17,6 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 
-import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_MH;
 import static com.tiger.easyrpc.common.EasyrpcConstant.EMPTY_STR;
 
 /**
@@ -41,12 +37,6 @@ public class FetcherResolver implements ApplicationListener<ContextRefreshedEven
         }
         Object urlStr = null;
         //获取url,如果未在注解内指定则从全局配置获取url，全局未指定则从注册中心获取,优先级注解>全局配置>注册中心
-        ICache cacheProvider = CacheManager.instance().getCacheProvider(SysCacheEnum.serviceurl.getCacheName());
-        //从注册中心获取
-        if(cacheProvider != null){
-            String serviceName = type.getName()+COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group;
-            urlStr = cacheProvider.get(serviceName);
-        }
         //从全局配置获取
         if(!StringUtils.isEmpty(consumerConfig.getRemoteUrl())){
             urlStr = consumerConfig.getRemoteUrl();

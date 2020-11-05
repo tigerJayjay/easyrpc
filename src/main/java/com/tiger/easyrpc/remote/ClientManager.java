@@ -34,7 +34,12 @@ public class ClientManager {
         //开启了注册中心配置，才会定时对不可用服务进行投票剔除
         if(EasyRpcManager.getInstance().isEnableRegistry()){
             ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-            scheduledExecutorService.scheduleWithFixedDelay(new ClientScanTask(),0, NO_CONNECT_CLIENT_SCAN_INTERVAL, TimeUnit.MILLISECONDS);
+            long scanInterval = NO_CONNECT_CLIENT_SCAN_INTERVAL;
+            Long configScanInterval = EasyRpcManager.getInstance().getRegistryConfig().getVoteInterval();
+            if(configScanInterval != null){
+                scanInterval = configScanInterval;
+            }
+            scheduledExecutorService.scheduleWithFixedDelay(new ClientScanTask(),0, scanInterval, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -51,6 +56,7 @@ public class ClientManager {
     class ClientScanTask implements Runnable{
         @Override
         public void run() {
+            logger.info("投票检测...");
             Map<String,Client> disconnectUrlMap = new LinkedHashMap<>();
             RegistryManager registryManager = RegistryManager.getInstance();
             for(Map.Entry<String, Client> entry: clientMap.entrySet()){
@@ -66,7 +72,12 @@ public class ClientManager {
                 }
             }
             try {
-                Thread.sleep(WAIT_VOTE_RESULT);
+                long voteWait = WAIT_VOTE_RESULT;
+                Long configVoteWait = EasyRpcManager.getInstance().getRegistryConfig().getVoteWait();
+                if(configVoteWait != null){
+                    voteWait = configVoteWait;
+                }
+                Thread.sleep(voteWait);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -81,6 +92,8 @@ public class ClientManager {
                     try {
                         //下线服务
                         registryManager.unregist(url);
+                        //通知服务下线
+                        registryManager.publishUrlChange();
                         //关闭客户端
                         client.close();
                         //移除客户端缓存

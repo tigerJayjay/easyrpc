@@ -1,6 +1,7 @@
 package com.tiger.easyrpc.rpc.proxy;
 
 import com.tiger.easyrpc.common.SnowflakeUtils;
+import com.tiger.easyrpc.common.SysCacheEnum;
 import com.tiger.easyrpc.core.ConsumerConfig;
 import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.cache.client.MessageToChannelManager;
@@ -8,6 +9,8 @@ import com.tiger.easyrpc.core.metadata.AnnotationMetadata;
 import com.tiger.easyrpc.core.metadata.FetcherMetadata;
 import com.tiger.easyrpc.core.metadata.MetadataManager;
 import com.tiger.easyrpc.core.urlstrategy.RandomStrategy;
+import com.tiger.easyrpc.registry.cache.CacheManager;
+import com.tiger.easyrpc.registry.cache.ICache;
 import com.tiger.easyrpc.remote.netty4.NettyChannel;
 import com.tiger.easyrpc.rpc.Parameter;
 import com.tiger.easyrpc.rpc.ResultFuture;
@@ -19,6 +22,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_DH;
+import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_MH;
 
 /**
  * jdk代理处理类，通过该类来调用Channel对象进行远程调用并获取远程返回结果
@@ -48,9 +52,20 @@ public class EasyrpcInvocatioinHandler implements InvocationHandler {
         String group = fetcherMetadata.getGroup();
         ConsumerConfig consumerConfig = EasyRpcManager.getInstance().getConsumerConfig();
         String urlStr = fetcherMetadata.getUrl();
+        ICache cacheProvider = CacheManager.instance().getCacheProvider(SysCacheEnum.serviceurl.getCacheName());
+
         if(StringUtils.isEmpty(urlStr)){
-           throw new RuntimeException("无法获取可用服务，服务地址为空！");
+            //从注册中心获取
+            if(cacheProvider != null){
+                String serviceName = method.getDeclaringClass().getName()+COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group;
+                Object arg0 = cacheProvider.get(serviceName);
+                if( arg0== null){
+                    throw new RuntimeException("无法获取可用服务，服务地址为空！");
+                }
+                urlStr = String.valueOf(arg0);
+            }
         }
+
         String url = getRandomUrl(urlStr);
         Long mesId = SnowflakeUtils.genId();
         //调用远程方法并返回

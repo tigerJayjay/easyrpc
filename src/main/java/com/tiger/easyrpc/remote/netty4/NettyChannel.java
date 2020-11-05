@@ -39,9 +39,12 @@ public class NettyChannel implements Channel {
         NettyClient client =  new NettyClient(url);
         NettyClient pre = (NettyClient)instance.addSynClient(url, client);
         if(pre == null){
+            logger.trace("{}的client为null，创建了{}",url,client);
             client.connect();
+            client.sendMessage(o);
+            return;
         }
-        client.sendMessage(o);
+        pre.sendMessage(o);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.tiger.easyrpc.remote.netty4;
 
+import com.tiger.easyrpc.core.ConsumerConfig;
+import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.cache.client.MessageToChannelManager;
 import com.tiger.easyrpc.remote.api.Client;
 import com.tiger.easyrpc.rpc.Parameter;
@@ -27,9 +29,8 @@ import static com.tiger.easyrpc.common.EasyrpcConstant.*;
  * Netty远程连接客户端类，直接与服务端进行数据传输
  */
 public class NettyClient implements Client {
-
-    private ReentrantLock lock = new ReentrantLock();
-    private Condition connected = lock.newCondition();
+    private  ReentrantLock lock = new ReentrantLock();
+    private  Condition connected = lock.newCondition();
     private AtomicInteger retryCount = new AtomicInteger(0);
     private volatile int status;
     private Logger logger = LoggerFactory.getLogger(NettyClient.class);
@@ -119,9 +120,12 @@ public class NettyClient implements Client {
      * @throws Exception
      */
     public synchronized void connect(){
+        logger.trace("{}开始连接client{}！",Thread.currentThread().getName(),this);
         if(this.status < CLIENT_STATUS_INIT){
             init();
         }
+        //多个线程可能同时对同一个client对象进行连接操作，如果其中一个线程已经连接成功
+        //其他线程直接退出
         if(this.isConnected()){
             return;
         }
@@ -129,8 +133,21 @@ public class NettyClient implements Client {
         channelFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                //该client对象生命周期状态已经死亡或者超过配置重试次数，不再重试
+                ConsumerConfig consumerConfig = EasyRpcManager.getInstance().getConsumerConfig();
+                if((consumerConfig.getRetryCount()!=null &&
+                        retryCount.get()>consumerConfig.getRetryCount())||
+                        NettyClient.this.status == CLIENT_STATUS_DIE){
+                    return;
+                }
                 if (!channelFuture.isSuccess()) {
+                    NettyClient.this.status = CLIENT_STATUS_DISCONNECT;
                     final EventLoop loop = channelFuture.channel().eventLoop();
+                    Long retryInterval = DEFAULT_RETRY_INTERVAL;
+                    Long configRetryInterval = consumerConfig.getRetryInterval();
+                    if(configRetryInterval != null){
+                        retryInterval = configRetryInterval;
+                    }
                     loop.schedule(new Runnable() {
                         @Override
                         public void run() {
@@ -141,8 +158,9 @@ public class NettyClient implements Client {
                                 e.printStackTrace();
                             }
                         }
-                    }, 1L, TimeUnit.SECONDS);
+                    }, retryInterval, TimeUnit.MILLISECONDS);
                 }
+
             }
         });
     }
@@ -151,16 +169,6 @@ public class NettyClient implements Client {
      * 连接重试
      */
     public void retryConnect(){
-//        while(!isConnected() && status != CLIENT_STATUS_DIE){
-//            retryCount.getAndIncrement();
-//            try {
-//                Thread.sleep(new Random().nextInt(CONNECT_RETRY_INTERVAL)+1);
-//                this.connect();
-//                return;
-//            }catch (Exception e){
-//                logger.info("重连服务第{}次！",retryCount.get());
-//            }
-//        }
         channelFuture = b.connect(host,port);
 
     }
@@ -170,11 +178,11 @@ public class NettyClient implements Client {
      * @throws InterruptedException
      */
     public void close(){
+        this.status = CLIENT_STATUS_DIE;
         Channel channel = this.channelFuture.channel();
         if(channel.isOpen()){
             channel.close();
         }
-        this.status = CLIENT_STATUS_DIE;
     }
 
     /**
@@ -184,18 +192,16 @@ public class NettyClient implements Client {
     public  void  sendMessage(Object object){
         //并发情况下，可能会出现一个线程对client对象发起连接的过程中，另一个线程获取到该client发送信息，此时由于client还未
         //成功连接到客户端，发送消息会失败，所以在这里如果client状态为还未成功连接，需要等待该客户端连接成功之后才能发送
-        if(isConnected()){
-            this.channelFuture.channel().writeAndFlush(object);
-        }else {
-            lock.lock();
-            try {
-                this.connected.await();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+        while(true){
+            if(isConnected()){
+                logger.trace("{}发送！",Thread.currentThread().getName());
+                this.channelFuture.channel().writeAndFlush(object);
+                return;
+            }else {
+                Thread.yield();
             }
-            this.channelFuture.channel().writeAndFlush(object);
-            lock.unlock();
         }
+
 
     }
 
@@ -220,13 +226,10 @@ public class NettyClient implements Client {
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             super.channelActive(ctx);
-            lock.lock();
             NettyClient.this.status = CLIENT_STATUS_CONNECT;
             //重置重试次数
             retryCount.set(0);
             logger.info("连接成功！");
-            connected.signalAll();
-            lock.unlock();
         }
 
         @Override

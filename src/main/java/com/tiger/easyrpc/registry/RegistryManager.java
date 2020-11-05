@@ -2,6 +2,8 @@ package com.tiger.easyrpc.registry;
 
 import com.tiger.easyrpc.common.SysCacheEnum;
 import com.tiger.easyrpc.common.URLUtils;
+import com.tiger.easyrpc.core.ApplicationConfig;
+import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.registry.cache.CacheManager;
 import com.tiger.easyrpc.registry.cache.CacheTypeEnum;
 import com.tiger.easyrpc.registry.cache.ICache;
@@ -46,6 +48,7 @@ public class RegistryManager {
         //放入本地缓存
         CacheManager.instance().initCache(SysCacheEnum.serviceurl.getCacheName(), CacheTypeEnum.Local.getType());
         ICache cacheProvider = CacheManager.instance().getCacheProvider(SysCacheEnum.serviceurl.getCacheName());
+        cacheProvider.clear();
         cacheProvider.putAll(serviceUrlList);
     }
 
@@ -125,12 +128,18 @@ public class RegistryManager {
         subService.execute(new Runnable() {
             @Override
             public void run() {
-                registry.subscribe(new JedisPubSub() {
-                    @Override
-                    public void onMessage(String channel, String message) {
-                        flushLocalCache();
+                while(true){
+                    try{
+                        registry.subscribe(new JedisPubSub() {
+                            @Override
+                            public void onMessage(String channel, String message) {
+                                flushLocalCache();
+                            }
+                        },URL_CHANNEL);
+                    }catch (Exception e){
+                        logger.error("订阅服务变更信息失败！",e);
                     }
-                },URL_CHANNEL);
+                }
             }
         });
         subService.execute(new Runnable() {
@@ -143,10 +152,14 @@ public class RegistryManager {
                             return;
                         }
                         String url = message;
-                        String localUrl = URLUtils.getLocalUrl();
+                        ApplicationConfig applicationConfig = EasyRpcManager.getInstance().getApplicationConfig();
+                        String netHost = applicationConfig.getNetHost();
+                        if(StringUtils.isEmpty(netHost)){
+                            netHost = URLUtils.getLocalUrl(applicationConfig.getNetHostPre());
+                        }
                         String serverUrl = url.split(COMMON_SYMBOL_MH)[0];
                         //对本机地址发起的投票，本机不参与投票
-                        if(localUrl.equals(serverUrl)){
+                        if(netHost.equals(serverUrl)){
                             return;
                         }
                         boolean isActive = test(url);

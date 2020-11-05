@@ -2,6 +2,7 @@ package com.tiger.easyrpc.core.spring;
 
 
 import com.tiger.easyrpc.common.PropertiesUtils;
+import com.tiger.easyrpc.core.ApplicationConfig;
 import com.tiger.easyrpc.core.ConsumerConfig;
 import com.tiger.easyrpc.core.ProviderConfig;
 import com.tiger.easyrpc.core.RegistryConfig;
@@ -37,6 +38,11 @@ public class EasyRpcAutoConfiguration {
     public SpringBeanUtils springBeanUtils(){
         SpringBeanUtils springBeanUtils = new SpringBeanUtils();
         return springBeanUtils;
+    }
+
+    @Bean
+    public ApplicationConfig applicationConfig(){
+        return new ApplicationConfig();
     }
 
     @Configuration(

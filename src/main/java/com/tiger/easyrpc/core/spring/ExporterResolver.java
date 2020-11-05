@@ -1,5 +1,6 @@
 package com.tiger.easyrpc.core.spring;
 
+import com.tiger.easyrpc.common.URLUtils;
 import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.ProviderConfig;
 import com.tiger.easyrpc.core.annotation.Exporter;
@@ -19,8 +20,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Type;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 
 import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_MH;
@@ -70,17 +69,15 @@ public class ExporterResolver implements BeanDefinitionRegistryPostProcessor, Ap
         }
         Class serviceInterface = (Class)genericInterfaces[0];
         try {
-            InetAddress localHost = InetAddress.getLocalHost();
+
             if(EasyRpcManager.getInstance().isEnableRegistry()){
                 //注册中心发布
                 RegistryManager.getInstance().regist(serviceInterface.getName()+
-                        COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group,localHost.getHostAddress()+COMMON_SYMBOL_MH+providerConfig.getPort());
+                        COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group,URLUtils.getLocalServerUrlAndPort());
             }
             ExportServiceManager.services.put(serviceInterface.getName()+
                     COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group,aClass);
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("本机地址获取失败！");
-        } catch (InterruptedException e) {
+        }  catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 

@@ -2,6 +2,8 @@ package com.tiger.easyrpc.core.util;
 
 import com.tiger.easyrpc.core.function.ScanConsumer;
 import com.tiger.easyrpc.core.spring.EasyrpcClassVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.asm.ClassReader;
 
 import java.io.File;
@@ -23,10 +25,11 @@ import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_YJH;
  *类扫描解析工具类
  */
 public class PathResolverUtils {
+    private static Logger logger = LoggerFactory.getLogger(PathResolverUtils.class);
     private static final String FILE_NAME = "class";
     private static final String jarSpitPath = "/";
     private static final String jarFileSplit = "!";
-    private static final String fileHeader = "file:/";
+    private static final String fileHeader = "file:";
     private static void scan(String pack, ScanConsumer<String,String> consumer){
         String scanPath = pack.replace(COMMON_SYMBOL_YJH,jarSpitPath);
         try {
@@ -56,6 +59,7 @@ public class PathResolverUtils {
         String packPath = path.substring(lastSplit+1);
         if(packPath.startsWith(jarSpitPath))
             packPath = packPath.substring(1);
+        logger.info("jar包路径：{}",jarPath);
         JarFile jarFile = new JarFile(jarPath);
         Enumeration<JarEntry> entries = jarFile.entries();
         while(entries.hasMoreElements()){

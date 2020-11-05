@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * 注册中心配置类
  */
-@ConfigurationProperties("easyrpc.registry.redis")
+@ConfigurationProperties("easyrpc.registry")
 public class RegistryConfig {
     public RegistryConfig(){
         EasyRpcManager.getInstance().setRegistryConfig(this);
@@ -22,6 +22,25 @@ public class RegistryConfig {
     private String password;
     //连接池配置
     private Map<String,String> pool;
+    private Long voteWait;
+    private Long voteInterval;
+
+    public Long getVoteWait() {
+        return voteWait;
+    }
+
+    public void setVoteWait(Long voteWait) {
+        this.voteWait = voteWait;
+    }
+
+    public Long getVoteInterval() {
+        return voteInterval;
+    }
+
+    public void setVoteInterval(Long voteInterval) {
+        this.voteInterval = voteInterval;
+    }
+
     public String getHost() {
         return host;
     }

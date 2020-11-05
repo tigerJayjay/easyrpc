@@ -17,7 +17,26 @@ public class ConsumerConfig{
     private Parameter parameter;
     //远程调用超时时间 毫秒
     private Long rpcTimeout = 5000l;
+    private Long retryInterval;
+    private Integer retryCount;
     private boolean enable;
+
+
+    public Long getRetryInterval() {
+        return retryInterval;
+    }
+
+    public void setRetryInterval(Long retryInterval) {
+        this.retryInterval = retryInterval;
+    }
+
+    public Integer getRetryCount() {
+        return retryCount;
+    }
+
+    public void setRetryCount(Integer retryCount) {
+        this.retryCount = retryCount;
+    }
 
     public boolean isEnable() {
         return enable;

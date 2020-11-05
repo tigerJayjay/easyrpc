@@ -16,7 +16,7 @@
 - 支持服务自动发现及服务注册  
 - 不可用服务投票机制，客户端与服务端连接断开，开始发起投票，如果在规定时间内，存在任何一个客户端还和服务端正常连接， 
 表示连接可能由于网络波动断开，此时继续进行重连操作；如果规定时间内，可用投票数为0，表示服务端已经不可用，则从注册中心移除该服务，
-并从客户端缓存中移除该服务端对应的客户端对象，等服务恢复，会在下次服务调用时，重新生成。如果对该服务投票期间(10秒）， 
+并从客户端缓存中移除该服务端对应的客户端对象，等服务恢复，会在下次服务调用时，重新生成。如果对该服务投票期间(默认10秒）， 
 另一个客户端也检测到该服务不可用，那么不会重新对该服务发起投票，只会获取最终投票结果（不保证一定能获取到上一轮投票结果），
 来决定是否重连或者删除本地客户端对象。
 
@@ -36,7 +36,7 @@
 ## 1.5.配置  
 
 ### 1.5.1.服务端配置  
-- easyrpc.server.enable:是否开启服务端功能，默认false
+- easyrpc.server.enable:是否开启服务端功能，默认false 
 - easyrpc.server.port:指定服务暴露端口  
 - easyrpc.server.service.version:指定远程服务版本号  
 - easyrpc.server.service.group:指定远程服务分组  
@@ -46,25 +46,32 @@
 - easyrpc.client.remoteUrl:指定远程服务地址,格式(ip1:port1,ip2:port2)  
 - easyrpc.client.service.version:指定远程服务版本号  
 - easyrpc.client.service.group:指定远程服务分组  
-- easyrpc.client.rpcTimeout:远程调用超时时间,默认5000毫秒
+- easyrpc.client.rpcTimeout:远程调用超时时间,默认5000毫秒  
+- easyrpc.client.retryInterval:客户端重连间隔，默认5秒   
+- easyrpc.client.retryCount:客户端重连次数，默认不限次数  
 
 ### 1.5.3.注册中心配置
 Easyrpc基于redis作为注册中心，目前只支持单机，后续添加集群，主从及哨兵支持。 
 - easyrpc.registry.enable:是否开启注册中心支持，默认false  
-- easyrpc.registry.redis.host:redis ip地址
-- easyrpc.registry.redis.port:redis端口  
-- easyrpc.registry.redis.password:redis密码   
-- easyrpc.registry.redis.timeout:redis连接超时时间，单位毫秒    
-- easyrpc.registry.redis.pool.xxx:支持redis.clients.jedis.JedisPoolConfig类的所有属性    
+- easyrpc.registry.host:redis ip地址
+- easyrpc.registry.port:redis端口  
+- easyrpc.registry.password:redis密码   
+- easyrpc.registry.timeout:redis连接超时时间，单位毫秒    
+- easyrpc.registry.pool.xxx:支持redis.clients.jedis.JedisPoolConfig类的所有属性 
+- easyrpc.registry.voteWait:投票等待结果时间，默认10秒   
+- easyrpc.registry.voteInterval:投票间隔时间，默认30秒  
 
 ### 1.5.4.全局配置
-easyrpc.auto:是否开启自动配置，默认为true
+- easyrpc.auto:是否开启自动配置，默认为true  
+- easyrpc.net.host:指定本机地址，此参数值优先级比hostPre高，如果未指定，则遵守hostPre配置规则    
+- easyrpc.net.hostPre:指定符合前缀的第一个ip作为本机地址(多网卡），如果未获取到sitelocal类型的ip，则从linklocal类型获取，如果仍
+未获取到，则返回loopback地址  
 ## 1.6.待更新特性  
 - 扩展点机制  
 - 接口调用数据视图  
   
 ## 1.7.使用示例
-使用示例请clone仓库easyrpcserver和easyrpcclient
+- 使用示例请clone仓库easyrpcserver和easyrpcclient
 
 ## 1.8.相关实现说明
 ### 1.8.1.分布式锁
