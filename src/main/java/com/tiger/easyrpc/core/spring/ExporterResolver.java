@@ -2,9 +2,9 @@ package com.tiger.easyrpc.core.spring;
 
 import com.tiger.easyrpc.common.URLUtils;
 import com.tiger.easyrpc.core.EasyRpcManager;
-import com.tiger.easyrpc.core.ProviderConfig;
 import com.tiger.easyrpc.core.annotation.Exporter;
 import com.tiger.easyrpc.core.cache.server.ExportServiceManager;
+import com.tiger.easyrpc.core.config.ProviderConfig;
 import com.tiger.easyrpc.core.util.BeanDefinitionRegistryUtils;
 import com.tiger.easyrpc.core.util.PathResolverUtils;
 import com.tiger.easyrpc.registry.RegistryManager;

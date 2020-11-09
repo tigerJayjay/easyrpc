@@ -2,10 +2,10 @@ package com.tiger.easyrpc.core.spring;
 
 
 import com.tiger.easyrpc.common.PropertiesUtils;
-import com.tiger.easyrpc.core.ApplicationConfig;
-import com.tiger.easyrpc.core.ConsumerConfig;
-import com.tiger.easyrpc.core.ProviderConfig;
-import com.tiger.easyrpc.core.RegistryConfig;
+import com.tiger.easyrpc.core.config.ApplicationConfig;
+import com.tiger.easyrpc.core.config.ConsumerConfig;
+import com.tiger.easyrpc.core.config.ProviderConfig;
+import com.tiger.easyrpc.core.config.RegistryConfig;
 import com.tiger.easyrpc.core.util.SpringBeanUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

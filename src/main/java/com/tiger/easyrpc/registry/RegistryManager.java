@@ -2,8 +2,8 @@ package com.tiger.easyrpc.registry;
 
 import com.tiger.easyrpc.common.SysCacheEnum;
 import com.tiger.easyrpc.common.URLUtils;
-import com.tiger.easyrpc.core.ApplicationConfig;
 import com.tiger.easyrpc.core.EasyRpcManager;
+import com.tiger.easyrpc.core.config.ApplicationConfig;
 import com.tiger.easyrpc.registry.cache.CacheManager;
 import com.tiger.easyrpc.registry.cache.CacheTypeEnum;
 import com.tiger.easyrpc.registry.cache.ICache;
@@ -116,6 +116,13 @@ public class RegistryManager {
         return this.registry.getVoteResult(url);
     }
 
+    private void sleep(){
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e1) {
+            e1.printStackTrace();
+        }
+    }
     /**
      * 注册中心管理器初始化
      */
@@ -139,36 +146,45 @@ public class RegistryManager {
                     }catch (Exception e){
                         logger.error("订阅服务变更信息失败！",e);
                     }
+                   sleep();
                 }
             }
         });
         subService.execute(new Runnable() {
             @Override
             public void run() {
-                registry.subscribe(new JedisPubSub() {
-                    @Override
-                    public void onMessage(String channel, String message) {
-                        if(StringUtils.isEmpty(message)){
-                            return;
-                        }
-                        String url = message;
-                        ApplicationConfig applicationConfig = EasyRpcManager.getInstance().getApplicationConfig();
-                        String netHost = applicationConfig.getNetHost();
-                        if(StringUtils.isEmpty(netHost)){
-                            netHost = URLUtils.getLocalUrl(applicationConfig.getNetHostPre());
-                        }
-                        String serverUrl = url.split(COMMON_SYMBOL_MH)[0];
-                        //对本机地址发起的投票，本机不参与投票
-                        if(netHost.equals(serverUrl)){
-                            return;
-                        }
-                        boolean isActive = test(url);
-                        //可用+1
-                        if(isActive){
-                            registry.vote(url);
-                        }
+                while(true){
+                    try{
+                        registry.subscribe(new JedisPubSub() {
+                            @Override
+                            public void onMessage(String channel, String message) {
+                                if(StringUtils.isEmpty(message)){
+                                    return;
+                                }
+                                String url = message;
+                                ApplicationConfig applicationConfig = EasyRpcManager.getInstance().getApplicationConfig();
+                                String netHost = applicationConfig.getNetHost();
+                                if(StringUtils.isEmpty(netHost)){
+                                    netHost = URLUtils.getLocalUrl(applicationConfig.getNetHostPre());
+                                }
+                                String serverUrl = url.split(COMMON_SYMBOL_MH)[0];
+                                //对本机地址发起的投票，本机不参与投票
+                                if(netHost.equals(serverUrl)){
+                                    return;
+                                }
+                                boolean isActive = test(url);
+                                //可用+1
+                                if(isActive){
+                                    registry.vote(url);
+                                }
+                            }
+                        },VOTE_CHANNEL);
+                    }catch (Exception e){
+                        logger.error("订阅投票信息信息失败",e);
                     }
-                },VOTE_CHANNEL);
+                    sleep();
+                }
+
             }
         });
     }

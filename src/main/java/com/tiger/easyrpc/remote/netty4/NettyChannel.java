@@ -1,6 +1,7 @@
 package com.tiger.easyrpc.remote.netty4;
 
 import com.tiger.easyrpc.remote.ClientManager;
+import com.tiger.easyrpc.remote.RpcException;
 import com.tiger.easyrpc.remote.api.Channel;
 import com.tiger.easyrpc.remote.api.Client;
 import com.tiger.easyrpc.rpc.ResultFuture;
@@ -28,7 +29,7 @@ public class NettyChannel implements Channel {
     }
 
     @Override
-    public void sendMessage(Object o){
+    public void sendMessage(Object o) throws RpcException {
         ClientManager instance = ClientManager.getInstance();
         Client var1 = instance.getClient(url);
         if(var1 != null){
@@ -45,6 +46,7 @@ public class NettyChannel implements Channel {
             return;
         }
         pre.sendMessage(o);
+
     }
 
     @Override

@@ -2,9 +2,9 @@ package com.tiger.easyrpc.rpc.proxy;
 
 import com.tiger.easyrpc.common.SnowflakeUtils;
 import com.tiger.easyrpc.common.SysCacheEnum;
-import com.tiger.easyrpc.core.ConsumerConfig;
 import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.cache.client.MessageToChannelManager;
+import com.tiger.easyrpc.core.config.ConsumerConfig;
 import com.tiger.easyrpc.core.metadata.AnnotationMetadata;
 import com.tiger.easyrpc.core.metadata.FetcherMetadata;
 import com.tiger.easyrpc.core.metadata.MetadataManager;

@@ -51,15 +51,18 @@
 - easyrpc.client.retryCount:客户端重连次数，默认不限次数  
 
 ### 1.5.3.注册中心配置
-Easyrpc基于redis作为注册中心，目前只支持单机，后续添加集群，主从及哨兵支持。 
+Easyrpc基于redis作为注册中心，目前支持单机及哨兵模式。 
 - easyrpc.registry.enable:是否开启注册中心支持，默认false  
-- easyrpc.registry.host:redis ip地址
-- easyrpc.registry.port:redis端口  
-- easyrpc.registry.password:redis密码   
-- easyrpc.registry.timeout:redis连接超时时间，单位毫秒    
-- easyrpc.registry.pool.xxx:支持redis.clients.jedis.JedisPoolConfig类的所有属性 
 - easyrpc.registry.voteWait:投票等待结果时间，默认10秒   
 - easyrpc.registry.voteInterval:投票间隔时间，默认30秒  
+- easyrpc.registry.redis.host:redis ip地址
+- easyrpc.registry.redis.port:redis端口  
+- easyrpc.registry.redis.password:redis密码   
+- easyrpc.registry.redis.timeout:redis连接超时时间，单位毫秒    
+- easyrpc.registry.redis.pool.xxx:支持redis.clients.jedis.JedisPoolConfig类的所有属性 
+- easyrpc.registry.redis.mode:redis模式，包括single(单机模式)，sentinel（哨兵模式），默认单机模式
+- easyrpc.registry.redis.masterName：redis哨兵配置中的<master-name>
+- easyrpc.registry.redis.sentinelUrl:redis哨兵地址，格式<url_1:port_1,url_2:port_2>，例：127.0.0.1:57003,127.0.0.1:57004
 
 ### 1.5.4.全局配置
 - easyrpc.auto:是否开启自动配置，默认为true  
@@ -78,6 +81,8 @@ Easyrpc基于redis作为注册中心，目前只支持单机，后续添加集�
 - 由于存在多个线程同时使用注册中心进行服务更新，为了保证服务更新操作的原子性，所以使用分布式锁，
 锁过期时间为30秒，为了防止更新操作时间过长导致的在此期间分布式锁失效，所以引入监视机制，每10秒更新一次
 锁存活时间。
+- 目前在哨兵模式下不保证分布式锁一定能有效，在主节点突然宕机的情况下，如果此时分布式锁还未复制到从节点，
+从节点被选举为主节点之后，分布式锁可能会被其他客户端获取到，此时服务地址更新可能会失效  
 ### 1.8.2.服务下线投票机制
 - 如果某个服务不可用，导致与客户端的断连（包含服务端宕机及偶发的网络不通），此时客户端会检测到断连通知，
 立刻将与此服务端连接的客户端对象标记为断连状态，并在30秒内发起服务不可用投票（投票机制介绍在1.2.3），如果
@@ -89,3 +94,6 @@ Easyrpc基于redis作为注册中心，目前只支持单机，后续添加集�
 消息标识，此标识全局唯一，并且与Channel对象关联，当客户端发送完消息，会返回一个ResultFuture来监视消息的状态，
 通过ResultFuture获取返回结果，如果结果未返回，会在规定时间内阻塞当前线程。此当服务端响应消息时，会将发送消息的标识也返回，
 然后通过消息标识获取Channel对象并设置返回结果，此时会唤醒之前阻塞的线程并获取结果，然后执行之后的消息处理逻辑。
+### 1.8.4.消息大小
+- 心跳消息在客户端空闲时10秒发送一次，大小为6个字节
+- 可设置springboot日志级别为TRACE来查看实际调用服务的消息大小

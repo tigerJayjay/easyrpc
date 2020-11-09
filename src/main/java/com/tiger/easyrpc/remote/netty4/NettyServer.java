@@ -53,7 +53,7 @@ public class NettyServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        socketChannel.pipeline().addLast(new IdleStateHandler(40, 0, 60 * 10, TimeUnit.SECONDS));
+                        socketChannel.pipeline().addLast(new IdleStateHandler(40, 0, 0, TimeUnit.SECONDS));
                         socketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024*1024,0,4,0,4));
                         //解码
                         socketChannel.pipeline().addLast(new NettyProtostuffDec(Parameter.class));

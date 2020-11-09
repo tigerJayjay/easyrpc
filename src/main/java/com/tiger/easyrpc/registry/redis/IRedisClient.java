@@ -32,5 +32,17 @@ public interface IRedisClient {
 
     void del(String key);
 
+    /**
+     * redis分布式加锁
+     * @param requestId  解锁时用于区分该锁是否为该线程加的锁
+     * @return
+     */
+    boolean lock(String requestId);
 
+    /**
+     * redis分布式解锁
+     * @param requestId
+     * @return
+     */
+    boolean unlock(String requestId);
 }

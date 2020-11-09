@@ -1,8 +1,9 @@
 package com.tiger.easyrpc.remote.netty4;
 
-import com.tiger.easyrpc.core.ConsumerConfig;
 import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.cache.client.MessageToChannelManager;
+import com.tiger.easyrpc.core.config.ConsumerConfig;
+import com.tiger.easyrpc.remote.RpcException;
 import com.tiger.easyrpc.remote.api.Client;
 import com.tiger.easyrpc.rpc.Parameter;
 import com.tiger.easyrpc.rpc.Result;
@@ -104,7 +105,7 @@ public class NettyClient implements Client {
         b.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                socketChannel.pipeline().addLast(new IdleStateHandler(20, 10, 60 * 10, TimeUnit.SECONDS));
+                socketChannel.pipeline().addLast(new IdleStateHandler(0, 10, 0, TimeUnit.SECONDS));
                 socketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024*1024,0,4,0,4));
                 //解码
                 socketChannel.pipeline().addLast(new NettyProtostuffDec(Result.class));
@@ -189,16 +190,23 @@ public class NettyClient implements Client {
      * 发送信息
      * @param object
      */
-    public  void  sendMessage(Object object){
+    public  void  sendMessage(Object object) throws RpcException {
         //并发情况下，可能会出现一个线程对client对象发起连接的过程中，另一个线程获取到该client发送信息，此时由于client还未
         //成功连接到客户端，发送消息会失败，所以在这里如果client状态为还未成功连接，需要等待该客户端连接成功之后才能发送
-        while(true){
+        long start = System.currentTimeMillis();
+        while(!(System.currentTimeMillis() - start > 3000)){
             if(isConnected()){
                 logger.trace("{}发送！",Thread.currentThread().getName());
                 this.channelFuture.channel().writeAndFlush(object);
                 return;
-            }else {
-                Thread.yield();
+            }else if(this.status == CLIENT_STATUS_DIE) {
+                throw new RpcException("客户端对象已失效！");
+            }else{
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

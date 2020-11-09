@@ -11,10 +11,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static com.tiger.easyrpc.common.EasyrpcConstant.*;
 
@@ -33,7 +30,13 @@ public class ClientManager {
     public void init(){
         //开启了注册中心配置，才会定时对不可用服务进行投票剔除
         if(EasyRpcManager.getInstance().isEnableRegistry()){
-            ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+            ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r,"vote-thread");
+                    return t;
+                }
+            });
             long scanInterval = NO_CONNECT_CLIENT_SCAN_INTERVAL;
             Long configScanInterval = EasyRpcManager.getInstance().getRegistryConfig().getVoteInterval();
             if(configScanInterval != null){
@@ -56,53 +59,55 @@ public class ClientManager {
     class ClientScanTask implements Runnable{
         @Override
         public void run() {
-            logger.info("投票检测...");
-            Map<String,Client> disconnectUrlMap = new LinkedHashMap<>();
-            RegistryManager registryManager = RegistryManager.getInstance();
-            for(Map.Entry<String, Client> entry: clientMap.entrySet()){
-                Client value = entry.getValue();
-                if(value instanceof NettyClient){
-                    NettyClient var1 = (NettyClient)value;
-                    if(var1.getStatus() == CLIENT_STATUS_DISCONNECT){
-                        //客户端与服务端断开连接，发起投票，确定是否剔除服务
-                        String url = var1.getHost() + COMMON_SYMBOL_MH + var1.getPort();
-                        registryManager.vote(url);
-                        disconnectUrlMap.put(url,value);
+            try{
+                logger.info("投票检测...");
+                Map<String,Client> disconnectUrlMap = new LinkedHashMap<>();
+                RegistryManager registryManager = RegistryManager.getInstance();
+                for(Map.Entry<String, Client> entry: clientMap.entrySet()){
+                    Client value = entry.getValue();
+                    if(value instanceof NettyClient){
+                        NettyClient var1 = (NettyClient)value;
+                        if(var1.getStatus() == CLIENT_STATUS_DISCONNECT){
+                            //客户端与服务端断开连接，发起投票，确定是否剔除服务
+                            String url = var1.getHost() + COMMON_SYMBOL_MH + var1.getPort();
+                            registryManager.vote(url);
+                            logger.info("投票完成，等待结果...");
+                            disconnectUrlMap.put(url,value);
+                        }
                     }
                 }
-            }
-            try {
                 long voteWait = WAIT_VOTE_RESULT;
                 Long configVoteWait = EasyRpcManager.getInstance().getRegistryConfig().getVoteWait();
                 if(configVoteWait != null){
                     voteWait = configVoteWait;
                 }
                 Thread.sleep(voteWait);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            disconnectUrlMap.forEach((url,client)->{
-                //获取结果
-                String s = getVoteResult(url,registryManager);
-                logger.info("{}投票结果:{}",url,s);
-                //如果s为null，表示上一轮投票结果已经失效，需要由该客户端在下次重新发起投票
-                //在投票期间，客户端也在重连，由于在等待投票结果期间存在服务恢复的可能，所以需要再次验证一下客户端连接状态
-                if(s != null && Integer.valueOf(s) < 1
+                disconnectUrlMap.forEach((url,client)->{
+                    //获取结果
+                    String s = getVoteResult(url,registryManager);
+                    logger.info("{}投票结果:{}",url,s);
+                    //如果s为null，表示上一轮投票结果已经失效，需要由该客户端在下次重新发起投票
+                    //在投票期间，客户端也在重连，由于在等待投票结果期间存在服务恢复的可能，所以需要再次验证一下客户端连接状态
+                    if(s != null && Integer.valueOf(s) < 1
                         && client.getStatus() == CLIENT_STATUS_DISCONNECT){
-                    try {
                         //下线服务
-                        registryManager.unregist(url);
+                        try {
+                            registryManager.unregist(url);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         //通知服务下线
                         registryManager.publishUrlChange();
                         //关闭客户端
                         client.close();
                         //移除客户端缓存
                         clientMap.remove(url);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
-                }
-            });
+                });
+            }catch (Exception e){
+                logger.error("投票检测调度失败...",e);
+            }
+
         }
     }
 

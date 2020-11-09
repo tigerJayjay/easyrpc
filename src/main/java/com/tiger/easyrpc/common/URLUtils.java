@@ -1,8 +1,8 @@
 package com.tiger.easyrpc.common;
 
-import com.tiger.easyrpc.core.ApplicationConfig;
 import com.tiger.easyrpc.core.EasyRpcManager;
-import com.tiger.easyrpc.core.ProviderConfig;
+import com.tiger.easyrpc.core.config.ApplicationConfig;
+import com.tiger.easyrpc.core.config.ProviderConfig;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.Inet4Address;

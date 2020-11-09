@@ -1,6 +1,7 @@
-package com.tiger.easyrpc.core;
+package com.tiger.easyrpc.core.config;
 
 
+import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.entity.Service;
 import com.tiger.easyrpc.rpc.Parameter;
 import org.springframework.boot.context.properties.ConfigurationProperties;

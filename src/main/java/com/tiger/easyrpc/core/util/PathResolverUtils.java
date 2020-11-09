@@ -59,7 +59,7 @@ public class PathResolverUtils {
         String packPath = path.substring(lastSplit+1);
         if(packPath.startsWith(jarSpitPath))
             packPath = packPath.substring(1);
-        logger.info("jar包路径：{}",jarPath);
+        logger.trace("jar包路径：{}",jarPath);
         JarFile jarFile = new JarFile(jarPath);
         Enumeration<JarEntry> entries = jarFile.entries();
         while(entries.hasMoreElements()){

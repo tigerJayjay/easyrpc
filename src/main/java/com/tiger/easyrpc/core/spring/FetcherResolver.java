@@ -1,8 +1,8 @@
 package com.tiger.easyrpc.core.spring;
 
-import com.tiger.easyrpc.core.ConsumerConfig;
 import com.tiger.easyrpc.core.EasyRpcManager;
 import com.tiger.easyrpc.core.annotation.Fetcher;
+import com.tiger.easyrpc.core.config.ConsumerConfig;
 import com.tiger.easyrpc.core.metadata.AnnotationMetadata;
 import com.tiger.easyrpc.core.metadata.FetcherMetadata;
 import com.tiger.easyrpc.core.metadata.MetadataManager;
