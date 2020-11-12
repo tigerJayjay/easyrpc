@@ -37,4 +37,7 @@ public class EasyrpcConstant {
     //等待投票结果时间
     public static final int WAIT_VOTE_RESULT = 10000;
 
+    public static final String SCAN_BY_INTER = "interface";//按接口扫描
+    public static final String SCAN_BY_ANNO = "annotation";//按注解扫描
+
 }

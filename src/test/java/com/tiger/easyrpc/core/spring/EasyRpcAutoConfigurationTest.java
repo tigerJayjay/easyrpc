@@ -12,7 +12,7 @@ public class EasyRpcAutoConfigurationTest {
 
     @Test
     public void AsmTest() throws IOException {
-        File file = new File("D:\\自定义\\easyrpc\\target\\classes\\com\\tiger\\easyrpc\\core\\spring\\EasyRpcAutoConfiguration.class");
+        File file = new File("D:\\My\\easyrpc\\target\\classes\\com\\tiger\\easyrpc\\core\\spring\\EasyRpcAutoConfiguration.class");
         FileInputStream inputStream = new FileInputStream(file);
         ClassReader reader = new ClassReader(inputStream);
         reader.accept(new MyClassVisitor(),ClassReader.SKIP_FRAMES);

@@ -21,8 +21,7 @@ import org.springframework.util.StringUtils;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_DH;
-import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_MH;
+import static com.tiger.easyrpc.common.EasyrpcConstant.*;
 
 /**
  * jdk代理处理类，通过该类来调用Channel对象进行远程调用并获取远程返回结果
@@ -47,25 +46,45 @@ public class EasyrpcInvocatioinHandler implements InvocationHandler {
         }
         //通过代理对象获取Fetcher元数据信息，用来组装远程服务信息
         AnnotationMetadata metadata = MetadataManager.getInstance().getMetadata(proxy);
-        FetcherMetadata fetcherMetadata = ((FetcherMetadata)metadata);
-        String version = fetcherMetadata.getVersion();
-        String group = fetcherMetadata.getGroup();
+        String version = "";
+        String group = "";
+        String urlStr = "";
+        if(metadata!=null){
+            //从@Fetcher注解获取服务信息
+            FetcherMetadata fetcherMetadata = ((FetcherMetadata)metadata);
+            version = fetcherMetadata.getVersion();
+            group = fetcherMetadata.getGroup();
+            urlStr = fetcherMetadata.getUrl();
+        }
         ConsumerConfig consumerConfig = EasyRpcManager.getInstance().getConsumerConfig();
-        String urlStr = fetcherMetadata.getUrl();
-        ICache cacheProvider = CacheManager.instance().getCacheProvider(SysCacheEnum.serviceurl.getCacheName());
+        //从全局配置获取服务信息
+        if(StringUtils.isEmpty(version)){
+            version = consumerConfig.getVersion() == null ? EMPTY_STR : consumerConfig.getVersion();
 
+        }
+        if(StringUtils.isEmpty(group)){
+            group = consumerConfig.getGroup() == null ? EMPTY_STR : consumerConfig.getGroup();
+
+        }
         if(StringUtils.isEmpty(urlStr)){
-            //从注册中心获取
-            if(cacheProvider != null){
-                String serviceName = method.getDeclaringClass().getName()+COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group;
-                Object arg0 = cacheProvider.get(serviceName);
-                if( arg0== null){
-                    throw new RuntimeException("无法获取可用服务，服务地址为空！");
+            urlStr  = consumerConfig.getRemoteUrl();
+
+        }
+        if(StringUtils.isEmpty(urlStr)){
+            ICache cacheProvider = CacheManager.instance().getCacheProvider(SysCacheEnum.serviceurl.getCacheName());
+            if(StringUtils.isEmpty(urlStr)){
+                //从注册中心获取
+                if(cacheProvider != null){
+                    String serviceName = method.getDeclaringClass().getName()+COMMON_SYMBOL_MH+version+COMMON_SYMBOL_MH+group;
+                    Object arg0 = cacheProvider.get(serviceName);
+                    if(arg0 != null)
+                        urlStr = String.valueOf(arg0);
                 }
-                urlStr = String.valueOf(arg0);
             }
         }
-
+        if( urlStr== null){
+            throw new RuntimeException("无法获取可用服务，服务地址为空！");
+        }
         String url = getRandomUrl(urlStr);
         Long mesId = SnowflakeUtils.genId();
         //调用远程方法并返回

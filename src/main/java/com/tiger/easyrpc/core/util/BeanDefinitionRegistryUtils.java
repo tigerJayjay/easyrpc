@@ -12,6 +12,16 @@ import java.beans.Introspector;
  * Bean信息注册工具类
  */
 public class BeanDefinitionRegistryUtils {
+    public static void registFactoryBean(BeanDefinitionRegistry registry, Class<?> factoryClass, Class targetClass){
+        if(ObjectUtils.isEmpty(factoryClass) || ObjectUtils.isEmpty(targetClass)){
+            return;
+        }
+        BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(factoryClass);
+        AbstractBeanDefinition beanDefinition = beanDefinitionBuilder.getBeanDefinition();
+        beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(targetClass);
+        registry.registerBeanDefinition(Introspector.decapitalize(targetClass.getSimpleName()),beanDefinition);
+    }
+
     public static void regist(BeanDefinitionRegistry registry, Class<?> clazz){
         if(ObjectUtils.isEmpty(clazz)){
             return;

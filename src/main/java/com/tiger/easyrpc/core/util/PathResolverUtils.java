@@ -1,5 +1,6 @@
 package com.tiger.easyrpc.core.util;
 
+import com.tiger.easyrpc.core.function.ResolvePredicate;
 import com.tiger.easyrpc.core.function.ScanConsumer;
 import com.tiger.easyrpc.core.spring.EasyrpcClassVisitor;
 import org.slf4j.Logger;
@@ -14,12 +15,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_XG;
-import static com.tiger.easyrpc.common.EasyrpcConstant.COMMON_SYMBOL_YJH;
+import static com.tiger.easyrpc.common.EasyrpcConstant.*;
 
 /**
  *类扫描解析工具类
@@ -30,7 +29,7 @@ public class PathResolverUtils {
     private static final String jarSpitPath = "/";
     private static final String jarFileSplit = "!";
     private static final String fileHeader = "file:";
-    private static void scan(String pack, ScanConsumer<String,String> consumer){
+    private static void scan(String pack, ScanConsumer<String,String,String> consumer){
         String scanPath = pack.replace(COMMON_SYMBOL_YJH,jarSpitPath);
         try {
             Enumeration<URL> urls = getClassLoader().getResources(scanPath);
@@ -51,7 +50,7 @@ public class PathResolverUtils {
     /**
      * 扫描Jar包
      */
-    private static void scanClassJar(String path,ScanConsumer<String,String> consumer) throws IOException, ClassNotFoundException {
+    private static void scanClassJar(String path,ScanConsumer<String,String,String> consumer) throws IOException, ClassNotFoundException {
         int lastSplit = path.lastIndexOf(jarFileSplit);
         int firstSplit = path.indexOf(jarFileSplit);
         String jarPath = path.substring(0,firstSplit);
@@ -93,7 +92,10 @@ public class PathResolverUtils {
      * @return
      */
     public static List<Class> resolverByInterface(String pack,Class interClass){
-        Predicate<Object> predicate = obj ->{
+        ResolvePredicate<Object,String> predicate = (obj,resolveType) ->{
+            if(!SCAN_BY_INTER.equals(resolveType)){
+                return false;
+            }
             if(obj instanceof String){
                 String classPath = ((String) obj).replace(jarSpitPath, COMMON_SYMBOL_YJH);
                 if(interClass.getName().equals(classPath)){
@@ -112,7 +114,10 @@ public class PathResolverUtils {
      * @return
      */
     public static List<Class> resolverByAnnotation(String pack, Class annoClass){
-        Predicate<Object> predicate = clazz ->{
+        ResolvePredicate<Object,String> predicate = (clazz, resolveType) ->{
+            if(!SCAN_BY_ANNO.equals(resolveType)){
+                return false;
+            }
             if(clazz instanceof String){
                 String classPath = ((String) clazz).replace(jarSpitPath, COMMON_SYMBOL_YJH);
                 if (annoClass.getName().equals(classPath)){
@@ -124,10 +129,10 @@ public class PathResolverUtils {
         return resolver(pack,predicate);
     }
 
-    private static List<Class> resolver(String pack, Predicate<Object> predicate){
+    private static List<Class> resolver(String pack, ResolvePredicate<Object,String> predicate){
         List<Class> result = new ArrayList<>();
-        ScanConsumer<String,String> consumer = (p1,p2) ->{
-            boolean test = predicate.test(p1);
+        ScanConsumer<String,String,String> consumer = (p1,p2,p3) ->{
+            boolean test = predicate.test(p1,p3);
             if(test){
                 try {
                     result.add(Class.forName(p2));
@@ -150,7 +155,7 @@ public class PathResolverUtils {
      * @param packageName 包路径
      * @param consumer 对扫描到的Class执行的操作
      */
-    private static void scanClass(String path, String packageName,ScanConsumer<String,String> consumer) throws IOException {
+    private static void scanClass(String path, String packageName,ScanConsumer<String,String,String> consumer) throws IOException {
         File f = new File(path);
         File[] fs = f.listFiles();
         for (File ft : fs) {

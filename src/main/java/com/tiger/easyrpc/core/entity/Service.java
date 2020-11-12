@@ -5,8 +5,17 @@ package com.tiger.easyrpc.core.entity;
  */
 public class Service {
 
+    private String scan;
     private String version;
     private String group;
+
+    public String getScan() {
+        return scan;
+    }
+
+    public void setScan(String scan) {
+        this.scan = scan;
+    }
 
     public String getVersion() {
         return version;

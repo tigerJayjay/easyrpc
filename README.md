@@ -46,6 +46,8 @@
 - easyrpc.client.remoteUrl:指定远程服务地址,格式(ip1:port1,ip2:port2)  
 - easyrpc.client.service.version:指定远程服务版本号  
 - easyrpc.client.service.group:指定远程服务分组  
+- easyrpc.client.service.scan:将指定包下的服务接口生成代理bean，受spring管理，可以通过spring属性注入方式引入远程服务，
+如果设置此属性，可以无需使用@Fetcher注解，该属性需要在全局设置version和group
 - easyrpc.client.rpcTimeout:远程调用超时时间,默认5000毫秒  
 - easyrpc.client.retryInterval:客户端重连间隔，默认5秒   
 - easyrpc.client.retryCount:客户端重连次数，默认不限次数  
